@@ -1,0 +1,126 @@
+{% extends "geenie/layout.html" %}
+
+{% block style %}
+  {{ block.super }}
+  <style>
+    #addapp {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      height: 60px;
+      background: none;
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 20px;
+      border: 1px dashed;
+      border-radius: 10px;
+    }
+
+    #addapp:hover {
+      background: lightyellow;
+      cursor: pointer;
+    }
+
+    .appmenu .item {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background: lightyellow;
+      width: 30px !important;
+      height: 30px !important;
+      padding: 0 !important;
+    }
+  </style>
+{% endblock style %}
+
+{% block mastheader %}
+  {% include "geenie/header.html" %}
+{% endblock mastheader %}
+
+{% block mastbody %}
+<div class="ui vertical segment" style="background:whitesmoke">
+  <div class="ui container" style="background:white;height:1000px;padding:10px;">
+    <div id="addapp">
+      <i class="icon" data-feather="plus-square"></i>
+      <span style="margin-left:5px;background:none;">Add app</span>
+    </div>
+
+    <div class="ui two stackable cards">
+      <div class="card">
+        <div class="content" style="background:whitesmoke;padding:0;">
+          <div class="appmenu ui icon secondary menu" style="background:none">
+            <div class="header item" href="#">
+              BTC/ETH spread
+            </div>
+
+            <div class="right menu">
+              <a class="item" href="#">
+                <i class="icon" data-feather="box" style="width:80%;height:80%;"></i>
+              </a>
+
+              <a class="item" href="#">
+                <i class="icon" data-feather="command" style="width:80%;height:80%;"></i>
+              </a>
+
+              <a class="item">
+                <i class="icon" data-feather="code" style="width:80%;height:80%;"></i>
+              </a>
+
+              <a class="item">
+                <i class="icon" data-feather="user" style="width:80%;height:80%;"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="content">
+          1234
+        </div>
+      </div>
+
+
+      <div class="card">
+        2
+      </div>
+
+
+      <div class="card">
+        3
+      </div>
+
+
+      <div class="card">
+        4
+      </div>
+    </div>
+
+    <p>
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </p>
+
+    <p>
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </p>
+
+    <p>
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </p>
+  </div>
+</div>
+{% endblock mastbody %}
+
+{% block js %}
+  {{ block.super }}
+  <script>
+    $('#header-floated').visibility({
+      once: false,
+      onBottomPassed: function() {
+        $('#header-fixed').transition('fade in');
+      },
+      onBottomPassedReverse: function() {
+        $('#header-fixed').transition('fade out');
+      }
+    });
+  </script>
+{% endblock js %}

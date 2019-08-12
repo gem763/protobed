@@ -1,0 +1,99 @@
+<style>
+  #header-fixed {
+    display: none;
+    background: white;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2) !important;
+    z-index: 1;
+  }
+
+  #header-floated {
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2) !important;
+    z-index: 1;
+  }
+
+  #header-floated .logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  #header-floated .menu .item {
+    border-radius: 10px !important;
+    width: 100px;
+    /* height: 100px; */
+  }
+</style>
+
+
+<div id="header-fixed" class="ui center aligned vertical segment">
+  <div class="ui text container" style="background:none;">
+    <div class="ui icon secondary menu">
+      <a class="item" href="#">
+        <i class="icon" data-feather="codesandbox"></i>
+        <span style="margin-left:5px;">
+          <h3 class="ui left aligned header">
+            Geenie
+          </h3>
+        </span>
+      </a>
+
+      <div class="right menu">
+        <a class="item" href="#">
+          <i class="icon" data-feather="box"></i>
+        </a>
+
+        <a class="item" href="#">
+          <i class="icon" data-feather="command"></i>
+        </a>
+
+        <a class="item">
+          <i class="icon" data-feather="code"></i>
+        </a>
+
+        <a class="item">
+          <i class="icon" data-feather="user"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="header-floated" class="ui center aligned vertical segment">
+  <div class="ui text container" style="background:none;padding-top:20px;">
+    <h1 class="ui icon header" style="background:none;padding:10px">
+      <i class="logo icon" data-feather="codesandbox"></i>
+      <div class="content">
+        Geenie
+        <div class="sub header">Connect your ideas</div>
+      </div>
+    </h1>
+
+    <br>
+
+    <div class="ui compact labeled icon secondary menu" style="background:none;padding-top:10px;border-top:1px solid;">
+      <a class="item" href="#">
+        <i class="icon" data-feather="box"></i>
+        <span class="iconlabel">appbox</span>
+      </a>
+
+      <a class="item" href="#">
+        <i class="icon" data-feather="command"></i>
+        <span class="iconlabel">sharemarket</span>
+      </a>
+
+      <a class="item">
+        <i class="icon" data-feather="code"></i>
+        <span class="iconlabel">develop</span>
+      </a>
+
+      <a class="item">
+        <i class="icon" data-feather="user"></i>
+        <span class="iconlabel">mypage</span>
+      </a>
+    </div>
+  </div>
+</div>
