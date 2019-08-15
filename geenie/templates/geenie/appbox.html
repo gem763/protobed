@@ -18,7 +18,7 @@
     }
 
     #addapp:hover {
-      background: lightyellow;
+      background: #FFD700;
       cursor: pointer;
     }
 
@@ -34,19 +34,29 @@
     }
 
     .appcard {
-      /* box-shadow: 0 0 10px rgba(0,0,0,0.1) !important; */
-      /* box-shadow: none !important; */
-      /* border: 1px solid !important; */
+      box-shadow: none !important;
+      border: 1px solid !important;
+      border-radius: 0 !important;
     }
 
-    .appmenu {
+    .appcard:hover {
+      box-shadow: 0 0 20px rgba(0,0,0,0.1) !important;
+    }
+
+    .appcard .content {
       background: none;
       padding: 0 5px 0 5px !important;
     }
 
-    .appmenu .menu {
-      background: none;
+    .appcard .inner {
+      height: 200px;
+      /* background: lightyellow; */
+      border-top: 1px solid;
+    }
+
+    .appmenu {
       padding-right: 2px;
+      margin-bottom: 0 !important;
     }
 
     .appmenu .item .icon {
@@ -64,8 +74,10 @@
 <div class="ui vertical segment" style="background:none">
   <div class="ui container" style="background:white;height:1000px;padding:10px;">
     <div id="addapp">
-      <i class="icon" data-feather="plus-square"></i>
-      <span style="margin-left:5px;background:none;">Add app</span>
+      <div class="ui header" style="background:none;">
+        <i class="icon" data-feather="plus-square"></i>
+        <span style="margin-left:5px;">Add app</span>
+      </div>
     </div>
 
     <div class="ui two stackable cards">
@@ -79,6 +91,8 @@
 
   </div>
 </div>
+
+{% include "geenie/more.html" %}
 {% endblock mastbody %}
 
 {% block js %}
@@ -93,5 +107,57 @@
         $('#header-fixed').transition('fade out');
       }
     });
+
+    $('#addapp').click(function() {
+      $('.navi[dir="left"]').css('visibility', 'hidden');
+      $('.navi[dir="right"]').css('visibility', 'visible');
+      $('#more .inner.segments').css({'left': 0, 'width': '300%'});
+      $('#more .inner.segments').attr('state', 1)
+      $('#more').css('bottom', 0);
+    });
+
+    $('#more .close.item').click(function() {
+      var more = $('#more');
+      var h = more.css('height');
+      $('#more').css('bottom', '-' + h);
+    });
+
+    $('.navi').click(function() {
+      var dir = $(this).attr('dir');
+      var inner_seg = $('.inner.segments');
+      var w = inner_seg.children('.segment').width();
+      var n_segments = inner_seg.children('.segment').length;
+      var navi_left = $('.navi[dir="left"]');
+      var navi_right = $('.navi[dir="right"]');
+      var chg;
+      var state;
+
+      if (dir == 'left') {
+        chg = '+=' + w;
+        state = Number(inner_seg.attr('state')) - 1;
+        inner_seg.attr('state', state);
+
+      } else {
+        chg = '-=' + w;
+        state = Number(inner_seg.attr('state')) + 1;
+        inner_seg.attr('state', state);
+      }
+
+      if (state == 1) {
+        navi_left.css('visibility', 'hidden');
+        navi_right.css('visibility', 'visible');
+
+      } else if (state == n_segments) {
+        navi_left.css('visibility', 'visible');
+        navi_right.css('visibility', 'hidden');
+
+      } else {
+        navi_left.css('visibility', 'visible');
+        navi_right.css('visibility', 'visible');
+      }
+
+      inner_seg.css('left', chg);
+    });
+
   </script>
 {% endblock js %}
