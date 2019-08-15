@@ -9,3 +9,15 @@ def intro(request):
 
 def appbox(request):
     return render(request, 'geenie/appbox.html')
+
+
+def sharemarket(request):
+    return render(request, 'geenie/sharemarket.html')
+
+
+def develop(request):
+    return render(request, 'geenie/develop.html')
+
+
+def mypage(request):
+    return render(request, 'geenie/mypage.html')

@@ -35,6 +35,16 @@
   <script src="/static/feather/feather.js"></script>
   <script>
     feather.replace();
+
+    $('#header-floated').visibility({
+      once: false,
+      onBottomPassed: function() {
+        $('#header-fixed').transition('fade in');
+      },
+      onBottomPassedReverse: function() {
+        $('#header-fixed').transition('fade out');
+      }
+    });
   </script>
   {% endblock js %}
 

@@ -67,12 +67,12 @@
 {% endblock style %}
 
 {% block mastheader %}
-  {% include "geenie/header.html" %}
+  {% include "geenie/header.html" with appbox="active" %}
 {% endblock mastheader %}
 
 {% block mastbody %}
 <div class="ui vertical segment" style="background:none">
-  <div class="ui container" style="background:white;height:1000px;padding:10px;">
+  <div class="ui container" style="background:white;padding:10px;">
     <div id="addapp">
       <div class="ui header" style="background:none;">
         <i class="icon" data-feather="plus-square"></i>
@@ -98,16 +98,6 @@
 {% block js %}
   {{ block.super }}
   <script>
-    $('#header-floated').visibility({
-      once: false,
-      onBottomPassed: function() {
-        $('#header-fixed').transition('fade in');
-      },
-      onBottomPassedReverse: function() {
-        $('#header-fixed').transition('fade out');
-      }
-    });
-
     $('#addapp').click(function() {
       $('.navi[dir="left"]').css('visibility', 'hidden');
       $('.navi[dir="right"]').css('visibility', 'visible');

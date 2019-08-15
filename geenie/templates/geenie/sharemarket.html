@@ -1,0 +1,115 @@
+{% extends "geenie/layout.html" %}
+
+{% block style %}
+  {{ block.super }}
+  <style>
+    #searcher:focus-within {
+      background: whitesmoke !important;
+    }
+
+    .apphead:hover {
+      background: whitesmoke !important;
+      cursor: pointer;
+    }
+
+    .topapp {
+      box-shadow: none !important;
+      border: 1px solid !important;
+      border-radius: 0 !important;
+    }
+
+    .topapp:hover {
+      box-shadow: 0 0 20px rgba(0,0,0,0.1) !important;
+    }
+
+    .topapp .content {
+      background: none;
+      padding: 0 5px 0 5px !important;
+    }
+
+    .topapp .inner {
+      height: 200px;
+      border-bottom: 1px solid;
+    }
+
+    .appmenu {
+      background: none !important;
+      padding-right: 2px;
+      margin: 0 !important;
+    }
+
+    .appmenu .right.menu .item {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background: none;
+      width: 30px !important;
+      height: 30px !important;
+      padding: 0 !important;
+      margin: 2px !important;
+    }
+
+    .appmenu .item .icon {
+      width: 60%;
+      height: 60%;
+    }
+  </style>
+{% endblock style %}
+
+{% block mastheader %}
+  {% include "geenie/header.html" with sharemarket="active" %}
+{% endblock mastheader %}
+
+{% block mastbody %}
+<div class="ui vertical segment" style="background:none;border:none;">
+  <div id="searcher" class="ui text container" style="background:none;padding:10px;">
+
+    <div class="ui fluid search" style="background:white;border:1px solid;">
+      <div class="ui left icon fluid input" style="height:50px;font-size:20px;">
+        <i class="search icon"></i>
+        <input class="prompt" type="text" placeholder="Search apps or modules ..." style="border:none;">
+      </div>
+      <div class="results"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="ui vertical center aligned segment" style="background:none;height:500px;border:none;">
+  <div class="ui container" style="background:none;padding:10px;">
+    <h3 class="ui header" style="background:none;">
+      <i class="icon" data-feather="box"></i>
+      <span style="margin-left:5px;">Top apps</span>
+    </h3>
+
+    <div class="ui three stackable cards">
+      {% include "geenie/topapp.html" with topic="BTC/ETH spread" rank=1 %}
+      {% include "geenie/topapp.html" with topic="KSP200 vs S&P500" rank=2 %}
+      {% include "geenie/topapp.html" with topic="My backtester #1" rank=3%}
+    </div>
+  </div>
+</div>
+
+<div class="ui vertical center aligned segment" style="background:lightyellow;height:300px;border:none;">
+  <div class="ui text container" style="background:whitesmoke;padding:10px;">
+    <h3 class="ui header" style="background:none;">
+      <i class="icon" data-feather="cpu"></i>
+      <span style="margin-left:5px;">Top modules</span>
+    </h3>
+  </div>
+</div>
+
+<div class="ui vertical center aligned segment" style="background:none;height:300px;border:none;">
+  <div class="ui text container" style="background:whitesmoke;padding:10px;">
+    <h3 class="ui header" style="background:none;">
+      <span>Board</span>
+    </h3>
+  </div>
+</div>
+{% endblock mastbody %}
+
+{% block js %}
+  {{ block.super }}
+  <script>
+  </script>
+{% endblock js %}

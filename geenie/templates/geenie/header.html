@@ -32,28 +32,32 @@
   <div class="ui container" style="background:none;">
     <div class="ui icon secondary menu">
       <a class="item" href="#">
-        <i class="icon" data-feather="codesandbox"></i>
+        <div class="ui header" style="background:none;">
+          <i class="icon" data-feather="codesandbox"></i>
+          <span style="margin-left:5px;">Geenie</span>
+        </div>
+        <!-- <i class="icon" data-feather="codesandbox"></i>
         <span style="margin-left:5px;">
           <h3 class="ui left aligned header">
             Geenie
           </h3>
-        </span>
+        </span> -->
       </a>
 
       <div class="right menu">
-        <a class="item" href="#">
+        <a class="item {{ appbox }}" href="{% url 'appbox' %}">
           <i class="icon" data-feather="box"></i>
         </a>
 
-        <a class="item" href="#">
+        <a class="item {{ sharemarket }}" href="{% url 'sharemarket' %}">
           <i class="icon" data-feather="command"></i>
         </a>
 
-        <a class="item">
+        <a class="item {{ develop }}" href="{% url 'develop' %}">
           <i class="icon" data-feather="code"></i>
         </a>
 
-        <a class="item">
+        <a class="item {{ mypage }}" href="{% url 'mypage' %}">
           <i class="icon" data-feather="user"></i>
         </a>
       </div>
@@ -75,22 +79,22 @@
     <br>
 
     <div class="ui compact labeled icon secondary menu" style="background:none;padding-top:10px;border-top:1px solid;">
-      <a class="item" href="#">
+      <a class="item {{ appbox }}" href="{% url 'appbox' %}">
         <i class="icon" data-feather="box"></i>
         <span class="iconlabel">appbox</span>
       </a>
 
-      <a class="item" href="#">
+      <a class="item {{ sharemarket }}" href="{% url 'sharemarket' %}">
         <i class="icon" data-feather="command"></i>
         <span class="iconlabel">sharemarket</span>
       </a>
 
-      <a class="item">
+      <a class="item {{ develop }}" href="{% url 'develop' %}">
         <i class="icon" data-feather="code"></i>
         <span class="iconlabel">develop</span>
       </a>
 
-      <a class="item">
+      <a class="item {{ mypage }}" href="{% url 'mypage' %}">
         <i class="icon" data-feather="user"></i>
         <span class="iconlabel">mypage</span>
       </a>

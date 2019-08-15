@@ -1,0 +1,25 @@
+{% extends "geenie/layout.html" %}
+
+{% block style %}
+  {{ block.super }}
+  <style>
+  </style>
+{% endblock style %}
+
+{% block mastheader %}
+  {% include "geenie/header.html" with mypage="active" %}
+{% endblock mastheader %}
+
+{% block mastbody %}
+<div class="ui vertical segment" style="background:none;">
+  <div class="ui container" style="background:white;padding:10px;height:1000px;">
+    mypage
+  </div>
+</div>
+{% endblock mastbody %}
+
+{% block js %}
+  {{ block.super }}
+  <script>
+  </script>
+{% endblock js %}
