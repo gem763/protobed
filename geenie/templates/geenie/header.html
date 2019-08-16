@@ -9,6 +9,12 @@
     z-index: 1;
   }
 
+  #header-fixed .right.menu .item {
+    /* background: none; */
+    margin-right: 2px;
+    margin-left: 0;
+  }
+
   #header-floated {
     background: whitesmoke;
     /* box-shadow: 0 0 10px rgba(0,0,0,0.2) !important; */
@@ -22,7 +28,9 @@
 
   #header-floated .menu .item {
     border-radius: 10px !important;
-    width: 100px;
+    width: 70px;
+    margin: 2px;
+    min-width: 0;
     /* height: 100px; */
   }
 </style>
@@ -32,16 +40,14 @@
   <div class="ui container" style="background:none;">
     <div class="ui icon secondary menu">
       <a class="item" href="#">
-        <div class="ui header" style="background:none;">
+        <!-- <div class="ui header" style="background:none;">
           <i class="icon" data-feather="codesandbox"></i>
           <span style="margin-left:5px;">Geenie</span>
+        </div> -->
+        <div style="background:none;display: flex !important;align-items: center !important;justify-content: center !important;">
+          <i class="icon" data-feather="codesandbox"></i>
+          <span style="margin-left:5px;font-weight:bold;font-size:23px;">Gennie</span>
         </div>
-        <!-- <i class="icon" data-feather="codesandbox"></i>
-        <span style="margin-left:5px;">
-          <h3 class="ui left aligned header">
-            Geenie
-          </h3>
-        </span> -->
       </a>
 
       <div class="right menu">
@@ -67,7 +73,7 @@
 
 
 <div id="header-floated" class="ui center aligned vertical segment">
-  <div class="ui text container" style="background:none;padding-top:20px;">
+  <div class="ui container" style="background:none;padding-top:20px;">
     <h1 class="ui icon header" style="background:none;padding:10px">
       <i class="logo icon" data-feather="codesandbox"></i>
       <div class="content">
@@ -86,7 +92,7 @@
 
       <a class="item {{ sharemarket }}" href="{% url 'sharemarket' %}">
         <i class="icon" data-feather="command"></i>
-        <span class="iconlabel">sharemarket</span>
+        <span class="iconlabel">share</span>
       </a>
 
       <a class="item {{ develop }}" href="{% url 'develop' %}">

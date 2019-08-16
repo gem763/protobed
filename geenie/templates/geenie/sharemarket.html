@@ -75,12 +75,14 @@
   </div>
 </div>
 
-<div class="ui vertical center aligned segment" style="background:none;height:500px;border:none;">
+<div class="ui vertical center aligned segment" style="background:none;border:none;">
   <div class="ui container" style="background:none;padding:10px;">
-    <h3 class="ui header" style="background:none;">
+    <!-- <h3 class="ui header" style="background:none;"> -->
+    <div style="background:none;display: flex !important;align-items: center !important;justify-content: center !important;margin-bottom:20px;">
       <i class="icon" data-feather="box"></i>
-      <span style="margin-left:5px;">Top apps</span>
-    </h3>
+      <span style="margin-left:5px;font-weight:bold;font-size:20px;">Top apps</span>
+    </div>
+    <!-- </h3> -->
 
     <div class="ui three stackable cards">
       {% include "geenie/topapp.html" with topic="BTC/ETH spread" rank=1 %}
@@ -91,19 +93,26 @@
 </div>
 
 <div class="ui vertical center aligned segment" style="background:lightyellow;height:300px;border:none;">
-  <div class="ui text container" style="background:whitesmoke;padding:10px;">
-    <h3 class="ui header" style="background:none;">
+  <div class="ui text container" style="background:none;padding:10px;">
+    <div style="background:none;display: flex !important;align-items: center !important;justify-content: center !important;">
+      <i class="icon" data-feather="cpu"></i>
+      <span style="margin-left:5px;font-weight:bold;font-size:20px;">Top modules</span>
+    </div>
+    <!-- <h3 class="ui header" style="background:none;">
       <i class="icon" data-feather="cpu"></i>
       <span style="margin-left:5px;">Top modules</span>
-    </h3>
+    </h3> -->
   </div>
 </div>
 
 <div class="ui vertical center aligned segment" style="background:none;height:300px;border:none;">
-  <div class="ui text container" style="background:whitesmoke;padding:10px;">
-    <h3 class="ui header" style="background:none;">
+  <div class="ui text container" style="background:none;padding:10px;">
+    <div style="background:none;display: flex !important;align-items: center !important;justify-content: center !important;">
+      <span style="font-weight:bold;font-size:20px;">Board</span>
+    </div>
+    <!-- <h3 class="ui header" style="background:none;">
       <span>Board</span>
-    </h3>
+    </h3> -->
   </div>
 </div>
 {% endblock mastbody %}
