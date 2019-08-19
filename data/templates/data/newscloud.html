@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <title>NewsCloud</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  {% load static %}
+  {% block style %}
+  <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:400,800" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="/static/semantic/semantic.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/tippy.js@4/themes/light.css"/>
+
+  <style>
+    * {
+      font-family: 'Nunito Sans', sans-serif;
+    }
+  </style>
+  {% endblock style %}
+
+</head>
+
+
+<body>
+  <div id="mastheader">
+    {% block mastheader %}{% endblock mastheader %}
+  </div>
+
+
+  <div id="mastbody" style="display: flex !important; align-items: center !important; justify-content: center !important;height:100%;background:none;">
+    <div style="background:none;text-align:center;">
+      <div class="ui text container">
+        <h2 class="ui icon header" style="background:none;width:100%;padding:10px;border-bottom:2px solid">
+          <i class="map outline icon"></i>
+          <div class="content">
+            NEWS Cloud
+          </div>
+        </h2>
+
+        <!-- 'huffington_post':         'https://huffpost.com',
+        'cnn':                     'https://cnn.com',
+        'investing_com':           'https://investing.com',
+        'politico':                'https://politico.com',
+        'time':                    'https://time.com',
+        'cnbc':                    'https://cnbc.com',
+        'fox':                     'https://foxnews.com',
+        'fox_business':            'https://foxbusiness.com',
+        'bbc':                     'https://bbc.com',
+        'business_insider':        'https://businessinsider.com',
+        'morningstar':             'https://morningstar.com',
+        #'wallstreet_journal':      'https://wsj.com',
+        'newyork_times':           'https://nytimes.com',
+        'nbc':                     'https://nbcnews.com',
+        'guardian':                'https://theguardian.com',
+        'reuters':                 'https://reuters.com',
+        'washington_times':        'https://washingtontimes.com',
+        #'forbes':                  'https://forbes.com',
+        'washington_post':         'https://washingtonpost.com',
+        #'harvard_business_review': 'https://hbr.org',
+        #'financial_times':         'https://ft.com',
+        #'economist':               'https://economist.com',
+        'cbs':                     'https://cbsnews.com',
+        'market_watch':            'https://marketwatch.com',  -->
+
+
+        <div>
+          <div class="ui checked checkbox">
+            <input id="huffington_post" type="checkbox" checked="">
+            <label for="huffington_post">Huffington post</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="cnn" type="checkbox" checked="">
+            <label for="cnn">CNN</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="investing_com" type="checkbox" checked="">
+            <label for="investing_com">Investing.com</label>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="ui container" id="newscloud" style="text-align:center;background:none;"></div>
+      {{news}}
+    </div>
+  </div>
+
+  {% block js %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="/static/semantic/semantic.min.js"></script>
+  <script src="/static/feather/feather.js"></script>
+
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="/static/d3/d3.layout.cloud.js"></script>
+  <script src="/static/d3/wordcloud.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/2.4.3/lib/alea.min.js"></script>
+
+  <script src="https://unpkg.com/popper.js@1/dist/umd/popper.min.js"></script>
+  <script src="https://unpkg.com/tippy.js@4"></script>
+
+  <script>
+    feather.replace();
+
+    WordCloud({
+      container: "#newscloud",
+      data: {{ words | safe }},
+      width: $("#newscloud").width(),
+      height: 800
+    });
+
+    $('.checkbox').checkbox({
+      onChange: function() {
+        var publisher = $(':checkbox').map(function(){ if(this.checked) {return this.id} }).get().join()
+        var url = "{% url 'newscloud' %}" + "?publisher=" + publisher
+        window.location.assign(url);
+      }
+    });
+  </script>
+  {% endblock js %}
+
+</body>
+</html>
