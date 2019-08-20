@@ -37,34 +37,13 @@
           </div>
         </h2>
 
-        <!-- 'huffington_post':         'https://huffpost.com',
-        'cnn':                     'https://cnn.com',
-        'investing_com':           'https://investing.com',
-        'politico':                'https://politico.com',
-        'time':                    'https://time.com',
-        'cnbc':                    'https://cnbc.com',
-        'fox':                     'https://foxnews.com',
-        'fox_business':            'https://foxbusiness.com',
-        'bbc':                     'https://bbc.com',
-        'business_insider':        'https://businessinsider.com',
-        'morningstar':             'https://morningstar.com',
-        #'wallstreet_journal':      'https://wsj.com',
-        'newyork_times':           'https://nytimes.com',
-        'nbc':                     'https://nbcnews.com',
-        'guardian':                'https://theguardian.com',
-        'reuters':                 'https://reuters.com',
-        'washington_times':        'https://washingtontimes.com',
-        #'forbes':                  'https://forbes.com',
-        'washington_post':         'https://washingtonpost.com',
-        #'harvard_business_review': 'https://hbr.org',
-        #'financial_times':         'https://ft.com',
-        #'economist':               'https://economist.com',
-        'cbs':                     'https://cbsnews.com',
-        'market_watch':            'https://marketwatch.com',  -->
-
-
         <div>
-          <div class="ui checked checkbox">
+          <!-- <div class="ui checked all checkbox">
+            <input id="all" type="checkbox" checked="">
+            <label for="all">Select all</label>
+          </div> -->
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
             <input id="huffington_post" type="checkbox" checked="">
             <label for="huffington_post">Huffington post</label>
           </div>
@@ -79,10 +58,95 @@
             <label for="investing_com">Investing.com</label>
           </div>
 
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="politico" type="checkbox" checked="">
+            <label for="politico">Politico</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="time" type="checkbox" checked="">
+            <label for="time">TIME</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="cnbc" type="checkbox" checked="">
+            <label for="cnbc">CNBC</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="fox" type="checkbox" checked="">
+            <label for="fox">FOX</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="fox_business" type="checkbox" checked="">
+            <label for="fox_business">FOX business</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="bbc" type="checkbox" checked="">
+            <label for="bbc">BBC</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="business_insider" type="checkbox" checked="">
+            <label for="business_insider">Business Insider</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="morningstar" type="checkbox" checked="">
+            <label for="morningstar">Morningstar</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="newyork_times" type="checkbox" checked="">
+            <label for="newyork_times">Newyork Times</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="nbc" type="checkbox" checked="">
+            <label for="nbc">NBC</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="guardian" type="checkbox" checked="">
+            <label for="guardian">Guardian</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="reuters" type="checkbox" checked="">
+            <label for="reuters">Reuters</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="washington_times" type="checkbox" checked="">
+            <label for="washington_times">Washington Times</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="washington_post" type="checkbox" checked="">
+            <label for="washington_post">Washington post</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="cbs" type="checkbox" checked="">
+            <label for="cbs">CBS</label>
+          </div>
+
+          <div class="ui checked checkbox" style="margin-left:20px;">
+            <input id="market_watch" type="checkbox" checked="">
+            <label for="market_watch">Markt watch</label>
+          </div>
+
         </div>
       </div>
 
-      <div class="ui container" id="newscloud" style="text-align:center;background:none;"></div>
+      <div class="ui container" id="newscloud" style="text-align:center;background:none;height:400px;">
+        <!-- <div class="ui segment"> -->
+          <div class="ui active loader"></div>
+          <!-- <p></p> -->
+         <!-- </div> -->
+      </div>
       {{news}}
     </div>
   </div>
@@ -101,22 +165,38 @@
   <script src="https://unpkg.com/tippy.js@4"></script>
 
   <script>
-    feather.replace();
+    function update_newscloud(data) {
+      $.ajax({
+        url: '{% url "update_newscloud" %}',
+        async: true,
+        type: 'GET',
+        data: data,
+        dataType: 'json',
+        success: function(words) {
+          $('#newscloud').html('');
+          console.log(words);
 
-    WordCloud({
-      container: "#newscloud",
-      data: {{ words | safe }},
-      width: $("#newscloud").width(),
-      height: 800
-    });
+          WordCloud({
+            container: "#newscloud",
+            data: words,
+            width: $("#newscloud").width(),
+            height: $("#newscloud").height()
+          });
+        }
+      });
+    }
 
     $('.checkbox').checkbox({
       onChange: function() {
-        var publisher = $(':checkbox').map(function(){ if(this.checked) {return this.id} }).get().join()
-        var url = "{% url 'newscloud' %}" + "?publisher=" + publisher
-        window.location.assign(url);
+        $('#newscloud').html('<div class="ui active loader"></div>');
+        var publisher = $(':checkbox').map(function(){ if(this.checked) {return this.id} }).get().join();
+        data = { publisher:publisher };
+        update_newscloud(data);
       }
     });
+
+    feather.replace();
+    update_newscloud();
   </script>
   {% endblock js %}
 
