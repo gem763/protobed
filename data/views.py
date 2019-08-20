@@ -11,10 +11,21 @@ def newscloud(request):
     return render(request, 'data/newscloud.html')
 
 
+def news(request):
+    if request.method=='GET':
+        publisher = request.GET.get('publisher', None)
+        date_from = request.GET.get('from', None)
+        date_to = request.GET.get('to', None)
+        news = Newsdata.objects.filter(publish_date__date__gte=date_from, publish_date__date__lte=date_to, publisher=publisher).order_by('-publish_date')
+        news = list(news.values('publisher', 'title', 'publish_date', 'text', 'authors', 'url'))
+        # print(news)
+        return JsonResponse(news, safe=False)
+
+
 def update_newscloud(request):
     if request.method=='GET':
         publisher = request.GET.get('publisher', None)
-        days = request.GET.get('days', 20)
+        days = request.GET.get('days', 14)
 
         now = pd.Timestamp(Newsdata.objects.order_by('publish_date').last().publish_date)
         _from = (now - pd.DateOffset(days=days)).date()
@@ -29,7 +40,8 @@ def update_newscloud(request):
             news = news.filter(publisher__in=publisher)#.order_by('-publish_date')[:50]
 
         words = news.values_list('words', flat=True)
-        words = sum([ws.lower().split(',') for ws in words], [])
+        words = (','.join([ws.lower() for ws in words])).split(',')
+        # words = sum([ws.lower().split(',') for ws in words], [])
         words = dict(Counter(words).most_common(100))
         words.pop('he', None)
         words.pop('who', None)
