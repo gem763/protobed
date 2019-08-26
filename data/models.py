@@ -7,7 +7,7 @@ class Newsdata(models.Model):
     authors = models.CharField(max_length=300, default='')
     url = models.URLField(max_length=300)
     title = models.CharField(max_length=300)
-    publish_date = models.DateTimeField(auto_now_add=False, auto_now=False)
+    publish_date = models.DateTimeField(auto_now_add=False, auto_now=False, null=True, blank=True)
     publisher = models.CharField(max_length=100)
     words = models.TextField()
 
