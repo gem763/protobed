@@ -4,10 +4,12 @@ from django.db import models
 
 class Newsdata(models.Model):
     text = models.TextField()
-    authors = models.CharField(max_length=300, default='')
+    author = models.CharField(max_length=300, default='')
     url = models.URLField(max_length=300)
     title = models.CharField(max_length=300)
+    category = models.CharField(max_length=300, default='')
     publish_date = models.DateTimeField(auto_now_add=False, auto_now=False, null=True, blank=True)
+    download_date = models.DateTimeField(auto_now_add=False, auto_now=False, null=True, blank=True)
     publisher = models.CharField(max_length=100)
     words = models.TextField()
 
