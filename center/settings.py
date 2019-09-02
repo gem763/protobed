@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'geenie',
-    'data', 
+    'data',
 ]
 
 MIDDLEWARE = [
@@ -95,7 +95,7 @@ if os.getenv('GAE_APPLICATION', None):
             'HOST': '/cloudsql/protobed:us-central1:protobed-db',
             'USER': 'postgres',
             'PASSWORD': 'kkangse1',
-            'NAME': 'postgres',
+            'NAME': 'postgresdb',
         }
     }
 
@@ -111,7 +111,7 @@ else:
             'ENGINE': 'django.db.backends.postgresql',
             'HOST': '127.0.0.1',
             'PORT': '5432',
-            'NAME': 'postgres',      # sql 인스턴스에서 실제로 생성된 db 명칭 (인스턴스명 아님)
+            'NAME': 'postgresdb',      # sql 인스턴스에서 실제로 생성된 db 명칭 (인스턴스명 아님)
                                            # https://console.cloud.google.com/sql/instances/getchdb-001/databases?project=getch-245810
             'USER': 'postgres',            # sql 사용자계정 (IAM 서비스계정 아님)
                                            # https://console.cloud.google.com/sql/instances/getchdb-001/users?project=getch-245810

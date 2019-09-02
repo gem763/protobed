@@ -3,15 +3,18 @@ from django.db import models
 # Create your models here.
 
 class Newsdata(models.Model):
-    text = models.TextField()
-    author = models.CharField(max_length=300, default='')
-    url = models.URLField(max_length=300)
+    pub = models.CharField(max_length=100)
+    authors = models.CharField(max_length=300, default='')
     title = models.CharField(max_length=300)
     category = models.CharField(max_length=300, default='')
-    publish_date = models.DateTimeField(auto_now_add=False, auto_now=False, null=True, blank=True)
-    download_date = models.DateTimeField(auto_now_add=False, auto_now=False, null=True, blank=True)
-    publisher = models.CharField(max_length=100)
+    published_at = models.DateTimeField(auto_now_add=False, auto_now=False)
+    downloaded_at = models.DateTimeField(auto_now_add=False, auto_now=False)
+    text = models.TextField()
+    description = models.TextField()
+    top_image = models.URLField(max_length=300)
+    url = models.URLField(max_length=300)
     words = models.TextField()
+    language = models.CharField(max_length=50)
 
     def __str__(self):
-        return '[{publish_date} | {publisher}] {title}'.format(publish_date=self.publish_date, publisher=self.publisher, title=self.title)
+        return '[{published_at} | {pub}] {title}'.format(published_at=self.published_at, pub=self.pub, title=self.title)
