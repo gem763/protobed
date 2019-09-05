@@ -29,7 +29,7 @@ def news(request):
 def update_newscloud(request):
     if request.method=='GET':
         pub = request.GET.get('pub', None)
-        days = request.GET.get('days', 1)
+        days = request.GET.get('days', 3)
 
         now = pd.Timestamp.utcnow()
         # now = pd.Timestamp(Newsdata.objects.order_by('publish_date').last().publish_date)
@@ -49,7 +49,8 @@ def update_newscloud(request):
 
         s = time.time()
         counter = Counter()
-        [counter.update(json.loads(item)) for item in words]
+        [counter.update(item) for item in words]
+        # [counter.update(json.loads(item)) for item in words]
         # words = [item for sublist in words for item in json.loads(sublist)]
         # words = sum(list(words), [])
         # words = ','.join(words).split(',')
