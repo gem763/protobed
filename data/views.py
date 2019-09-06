@@ -45,22 +45,21 @@ def update_newscloud(request):
             news = news.filter(pub__in=pub)#.order_by('-publish_date')[:50]
 
 
-        words = news.values_list('words', flat=True)
+        # words = news.values_list('words', flat=True)#[:10]
+
 
         s = time.time()
         counter = Counter()
-        [counter.update(item) for item in words]
+        #[counter.update(item) for item in words]
+
+        for item in news.values_list('words', flat=True).iterator():
+            counter.update(item)
+
         # [counter.update(json.loads(item)) for item in words]
         # words = [item for sublist in words for item in json.loads(sublist)]
         # words = sum(list(words), [])
         # words = ','.join(words).split(',')
-        print('22222222222222222222', time.time()-s); s = time.time()
-        # words = (','.join([ws.lower() for ws in words])).split(',')
-        # words = dict(Counter(words).most_common(100))
+        print('***************************', time.time()-s)
         words = dict(counter.most_common(100))
         # words.pop('me', None)
-        print('333333333333333333333', time.time()-s); s = time.time()
         return JsonResponse(words, safe=False)
-
-
-    # _hashtags = Hashtag.objects.filter(feed__timestamp__date__gte=_from).exclude(feed__content__contains='카지노').values_list('hashtag', flat=True)
