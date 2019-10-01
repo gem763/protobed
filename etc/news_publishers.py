@@ -35,6 +35,7 @@ src = {
     'thinkprogress':    {'domain':'https://thinkprogress.org',         'pubname':'ThinkProgress'}, 
     'dailybeast':       {'domain':'https://thedailybeast.com',         'pubname':'DAILY BEAST'}, 
     'realclearpolitics':{'domain':'https://www.realclearpolitics.com', 'pubname':'RealClear Politics'}, # 반드시 www가 붙어야함
+    'aljazeera':        {'domain':'https://aljazeera.com',             'pubname':'Al Jazeera'}, 
     #'forbes':          'https://forbes.com', 
     #'hbr':             'https://hbr.org', 
     #'ft':              'https://ft.com', 
