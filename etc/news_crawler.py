@@ -12,6 +12,7 @@ import hashlib
 import glob
 import pandas as pd
 import news_publishers
+from pathlib import Path
 from langdetect import detect
 from pubtime_extractor import extractArticlePublishedDate
 import asyncio
@@ -44,11 +45,23 @@ def clean_url(pub, url):
     if pub!='zdnet':
     # zdnet은 반드시 www가 붙어야되는 듯 (2019.08.30)
         url = url.replace('https://www.', 'https://')
+
+    if pub=='axios':
+        try: url = url[:url.index('?utm_source=')]
+        except: pass
     
-    if pub!='thinkprogress' and url[-1]=='/':
-    # thinkprogress는 뒤의 /가 반드시 필요한 듯 (2019.09.04)
-        url = url[:-1]
-    
+    if pub=='arstechnica':
+        try: url = url[:url.index('?comments=1')]
+        except: pass
+
+    if pub=='americanconserv':
+        try: url = url[:url.index('?print=1')]
+        except: pass        
+        
+    if pub=='indiatimes':
+        try: url = url[:url.index('?utm_source=')]
+        except: pass      
+        
     if pub=='reuters':
     # reuters는 뒤에 의미없이 ?il=0 이 붙는 경우가 허다. 무슨뜬인지는 모름 (2019.09.04)
         try: url = url[:url.index('?il=0')]
@@ -64,6 +77,10 @@ def clean_url(pub, url):
         except: pass
         
         url += '?mod=rsswn'
+        
+    if pub!='thinkprogress' and url[-1]=='/':
+    # thinkprogress는 뒤의 /가 반드시 필요한 듯 (2019.09.04)
+        url = url[:-1]    
         
     return url
 
@@ -232,8 +249,7 @@ def select_urls(urls):
 
 def download(urls):
     n_total = sum([len(v) for _,v in urls.items()])
-    prg = Progressor(n_total, formater_suffix='downloading... {pub:<20}')
-    # prg = Progressor(len(set.union(*urls.values())), formater_suffix='downloading... {pub:<20}')
+    prg = Progressor(n_total, formater_suffix='downloading...')# {pub:<20}')
     basedir = os.path.join(os.getcwd(), 'newsdata')
     ext = '.json'
     newspaper_config = _config()
@@ -303,11 +319,26 @@ def download(urls):
                 published_at = await loop.run_in_executor(None, get_publish_time, article)
                 is_too_short = (not article.is_valid_body()) and (len(article.text)<500)
                 
+                if published_at == None:
+                    published_at = downloaded_at
+                    
+                content['published_at'] = str(published_at.date()) if published_at<=downloaded_at else str(downloaded_at.date())
                 content['title'] = await loop.run_in_executor(None, get_title, article) #article.title
                 content['language'] = language
                 
-                if text=='' or published_at==None or is_too_short or language!='en':
+                if text == '':
                     file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                    content['error'] = 'no text'
+                    out['trashed'].add(url)
+                    
+                elif is_too_short:
+                    file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                    content['error'] = 'too short'
+                    out['trashed'].add(url)
+                    
+                elif language != 'en':
+                    file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                    content['error'] = 'not english'
                     out['trashed'].add(url)
 
                 else:
@@ -316,11 +347,11 @@ def download(urls):
                     content['description'] = article.meta_description
                     content['authors'] = article.authors
                     content['top_image'] = article.top_image if article.top_image.split('.')[-1]!='ico' else ''
-                    content['published_at'] = str(published_at.date()) if published_at<=downloaded_at else str(downloaded_at.date())
                     out['downloaded'].add(url)
             
             except:
                 file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                content['error'] = 'something wrong'
                 out['trashed'].add(url)
             
             
@@ -331,7 +362,7 @@ def download(urls):
                 
             # 종종 100%가 넘어가는 경우가 있다
             # set.union(*urls.values()) 에 중복항목이 있는 듯: 요건 set이라서 문제였던것 같다. 해결한듯 (2019.09.27)
-            prg.stamp(pub=pub)
+            prg.stamp()#pub=pub)
             
         return pub, out
 
@@ -352,6 +383,163 @@ def download(urls):
     except Exception as ex:
         pass
         #print(ex)
+
+    finally:
+        loop.close()
+        
+    return result
+
+
+
+def download2(urls):
+    n_total = sum([len(v) for _,v in urls.items()])
+    prg = Progressor(n_total, formater_suffix='downloading...')# {pub:<20}')
+    basedir = os.path.join(os.getcwd(), 'newsdata')
+    ext = '.json'
+    newspaper_config = _config()
+    
+        
+    def makedir_if_not_exists(file):
+        _dir = os.path.dirname(file)
+        
+        if not os.path.isdir(_dir):
+            os.makedirs(_dir)
+            
+            
+    def detect_lang(article):
+        lang = article.meta_lang
+        
+        if lang=='':
+            return detect(article.text)
+        
+        else:
+            return lang
+            
+    
+    def get_article(url):
+        article = Article(url, config=newspaper_config)
+        article.download()
+        article.parse()
+        return article
+        
+        
+    def get_title(article):
+        if article.title in ['', '-', None]:
+        # '':cbc, '-':townhall
+            html = requests.get(article.url).text
+            extracted_title = extraction.Extractor().extract(html, source_url=article.url).title
+            
+            if extracted_title in ['', '-', None]:
+                if article.description=='':
+                    return article.pub
+                else:
+                    return article.description
+                
+            else:
+                return extracted_title
+            
+        else:
+            return article.title
+        
+    
+    async def _download(pub, _urls):
+        out = {'downloaded':set(), 'trashed':set()}
+        
+        for url in _urls:
+            hash_url = hashlib.sha1(url.encode('utf-8')).hexdigest()
+            #downloaded_at = pd.Timestamp.utcnow()
+
+            #########################
+            try:
+                trashed_file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                js = json.loads(Path(trashed_file).read_text())
+                downloaded_at = pd.Timestamp(js['downloaded_at'])
+            except:
+                continue
+            #########################
+            
+            content = {
+                'pub': pub, 
+                'url': url, 
+                'downloaded_at': str(downloaded_at)
+            }
+            
+            try: 
+                article = await loop.run_in_executor(None, get_article, url)
+                
+                text = article.text
+                language = detect_lang(article)
+                published_at = await loop.run_in_executor(None, get_publish_time, article)
+                is_too_short = (not article.is_valid_body()) and (len(article.text)<500)
+            
+                #########################
+                if published_at==None:
+                    published_at = downloaded_at
+                    
+                content['published_at'] = str(published_at.date()) if published_at<=downloaded_at else str(downloaded_at.date())
+                #########################
+                
+                content['title'] = await loop.run_in_executor(None, get_title, article) #article.title
+                content['language'] = language
+                
+                if text == '':
+                    file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                    content['error'] = 'no text'
+                    out['trashed'].add(url)
+                    
+                elif is_too_short:
+                    file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                    content['error'] = 'too short'
+                    out['trashed'].add(url)
+                    
+                elif language != 'en':
+                    file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                    content['error'] = 'not english'
+                    out['trashed'].add(url)
+
+                else:
+                    Path(trashed_file).unlink()
+                    file = os.path.join(basedir, 'downloaded', hash_url + ext)
+                    content['text'] = text
+                    content['description'] = article.meta_description
+                    content['authors'] = article.authors
+                    content['top_image'] = article.top_image if article.top_image.split('.')[-1]!='ico' else ''                    
+                    out['downloaded'].add(url)
+            
+            except:
+                file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                content['error'] = 'something wrong'
+                out['trashed'].add(url)
+            
+            
+            makedir_if_not_exists(file)
+            with open(file, 'w') as f:
+                json.dump(content, f)
+                
+                
+            # 종종 100%가 넘어가는 경우가 있다
+            # set.union(*urls.values()) 에 중복항목이 있는 듯: 요건 set이라서 문제였던것 같다. 해결한듯 (2019.09.27)
+            prg.stamp()#pub=pub)
+            
+        return pub, out
+
+
+    async def main():
+        fts = [asyncio.ensure_future(_download(pub, _urls)) for pub, _urls in urls.items()]
+        return await asyncio.gather(*fts)
+
+    
+    result = None
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    loop = asyncio.get_event_loop()
+
+    try:
+        result = loop.run_until_complete(main())
+        result = dict(result)
+
+    except Exception as ex:
+        #pass
+        print(ex)
 
     finally:
         loop.close()
@@ -389,6 +577,11 @@ class NewsCrawler:
         self.urls_final = download(self.urls_selected)
         return self._results_final(self.urls_final)
 
+    
+    def download2(self):
+        self.urls_final = download2(self.urls_selected)
+        return self._results_final(self.urls_final)    
+    
         
     def _summary_by_pubs(self, urls):
         return pd.Series({pub:len(_urls) for pub, _urls in urls.items()})
