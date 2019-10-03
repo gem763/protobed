@@ -101,22 +101,25 @@ class Progressor:
         timestamp = time.time() - self.start
         print(self.formater.format(pct=pct, timestamp=timestamp, **vargs), end='')
         
-        
+
 def collect_urls(src):
-    prg = Progressor(len(src), formater_suffix='URLs collecting... {pub:<20}')
+    prg = Progressor(len(src), formater_suffix='Collecting URLs... {pub:<20}')
     newspaper_config = partial(newspaper.build, config=_config())
         
-    async def geturls(pub, domain):
-        resp = await loop.run_in_executor(None, newspaper_config, domain)
-        articles = resp.articles
-        urls = {clean_url(pub, article.url) for article in articles}
-        #progress(pub)
+    async def geturls(pub, *domains):
+        urls = set()
+        
+        #if pub=='fox': set_trace()
+        for domain in domains:
+            resp = await loop.run_in_executor(None, newspaper_config, domain)
+            urls |= {clean_url(pub, article.url) for article in resp.articles}
+
         prg.stamp(pub=pub)
         return pub, urls
 
 
     async def main():
-        fts = [asyncio.ensure_future(geturls(pub, val['domain'])) for pub, val in src.items()]
+        fts = [asyncio.ensure_future(geturls(pub, *val['domain'])) for pub, val in src.items()]
         return await asyncio.gather(*fts)
 
 
@@ -136,7 +139,8 @@ def collect_urls(src):
     finally:
         loop.close()
 
-    return result
+    return result        
+        
 
 
 def get_publish_time(article):
@@ -220,8 +224,13 @@ def get_publish_time(article):
     return _timize(pubtime)
 
 
+# def fpath_of(hash_url, dirname_len=3):
+#     ext = '.json'
+#     return os.path.join(hash_url[dirname_len], hash_url + ext)
+
+
 def select_urls(urls):
-    prg = Progressor(len(urls), formater_suffix='URLs selecting... {pub:<20}')
+    prg = Progressor(len(urls), formater_suffix='Selecting URLs... {pub:<20}')
     selected = {}
     basedir = os.path.join(os.getcwd(), 'newsdata')
     ext = '.json'
@@ -232,9 +241,9 @@ def select_urls(urls):
         for _url in _urls:
             hash_url = hashlib.sha1(_url.encode('utf-8')).hexdigest()
             
-            file_in_saved = os.path.join(basedir, 'saved', hash_url[0], hash_url + ext)
+            file_in_saved = os.path.join(basedir, 'saved', hash_url[:3], hash_url + ext)
             file_in_downloaded = os.path.join(basedir, 'downloaded', hash_url + ext)
-            file_in_trashed = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+            file_in_trashed = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
 
             if os.path.isfile(file_in_saved) or os.path.isfile(file_in_downloaded) or os.path.isfile(file_in_trashed):
                 continue
@@ -249,7 +258,7 @@ def select_urls(urls):
 
 def download(urls):
     n_total = sum([len(v) for _,v in urls.items()])
-    prg = Progressor(n_total, formater_suffix='downloading...')# {pub:<20}')
+    prg = Progressor(n_total, formater_suffix='Downloading...')
     basedir = os.path.join(os.getcwd(), 'newsdata')
     ext = '.json'
     newspaper_config = _config()
@@ -327,17 +336,17 @@ def download(urls):
                 content['language'] = language
                 
                 if text == '':
-                    file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                    file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
                     content['error'] = 'no text'
                     out['trashed'].add(url)
                     
                 elif is_too_short:
-                    file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                    file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
                     content['error'] = 'too short'
                     out['trashed'].add(url)
                     
                 elif language != 'en':
-                    file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                    file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
                     content['error'] = 'not english'
                     out['trashed'].add(url)
 
@@ -350,7 +359,7 @@ def download(urls):
                     out['downloaded'].add(url)
             
             except:
-                file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
                 content['error'] = 'something wrong'
                 out['trashed'].add(url)
             
@@ -451,11 +460,15 @@ def download2(urls):
 
             #########################
             try:
-                trashed_file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                trashed_file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
                 js = json.loads(Path(trashed_file).read_text())
                 downloaded_at = pd.Timestamp(js['downloaded_at'])
             except:
+                print(hash_url)
                 continue
+                
+            url = clean_url(pub, url)
+            hash_url = hashlib.sha1(url.encode('utf-8')).hexdigest()
             #########################
             
             content = {
@@ -483,17 +496,17 @@ def download2(urls):
                 content['language'] = language
                 
                 if text == '':
-                    file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                    file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
                     content['error'] = 'no text'
                     out['trashed'].add(url)
                     
                 elif is_too_short:
-                    file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                    file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
                     content['error'] = 'too short'
                     out['trashed'].add(url)
                     
                 elif language != 'en':
-                    file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                    file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
                     content['error'] = 'not english'
                     out['trashed'].add(url)
 
@@ -507,7 +520,7 @@ def download2(urls):
                     out['downloaded'].add(url)
             
             except:
-                file = os.path.join(basedir, 'trashed', hash_url[0], hash_url + ext)
+                file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
                 content['error'] = 'something wrong'
                 out['trashed'].add(url)
             

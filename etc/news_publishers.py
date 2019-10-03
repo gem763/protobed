@@ -1,85 +1,87 @@
 src = {
-    'huffpost':         {'domain':'https://huffpost.com',                'pubname':'HuffPost'}, 
-    'cnn':              {'domain':'https://cnn.com',                     'pubname':'CNN'}, # ?=
-    'investingcom':     {'domain':'https://investing.com',               'pubname':'Investing.com'}, 
-    'politico':         {'domain':'https://politico.com',                'pubname':'POLITICO'}, 
-    'time':             {'domain':'https://time.com',                    'pubname':'TIME'}, 
-    'cnbc':             {'domain':'https://cnbc.com',                    'pubname':'CNBC'}, 
-    'foxnews':          {'domain':'https://foxnews.com',                 'pubname':'FOX News'}, 
-    'foxbusiness':      {'domain':'https://foxbusiness.com',             'pubname':'FOX Business'}, 
-    'bbc':              {'domain':'https://bbc.com',                     'pubname':'BBC'}, 
-    'businessinsider':  {'domain':'https://businessinsider.com',         'pubname':'Business Insider'}, 
+             'huffpost': {'pubname': 'HuffPost',                    'domain': ['https://huffpost.com']}, 
+                  'cnn': {'pubname': 'CNN',                         'domain': ['https://cnn.com']}, # ?=
+         'investingcom': {'pubname': 'Investing.com',               'domain': ['https://investing.com']}, 
+             'politico': {'pubname': 'POLITICO',                    'domain': ['https://politico.com']}, 
+                 'time': {'pubname': 'TIME',                        'domain': ['https://time.com']}, 
+                 'cnbc': {'pubname': 'CNBC',                        'domain': ['https://cnbc.com']}, 
+                  'fox': {'pubname': 'FOX',                         'domain': ['https://foxnews.com', 'https://foxbusiness.com']}, 
+#               'foxnews': {'pubname': 'FOX News',                    'domain': ['https://foxnews.com']}, 
+#           'foxbusiness': {'pubname': 'FOX Business',                'domain': ['https://foxbusiness.com']}, 
+                  'bbc': {'pubname': 'BBC',                         'domain': ['https://bbc.com']}, 
+      'businessinsider': {'pubname': 'Business Insider',            'domain': ['https://businessinsider.com']}, 
 
-    'morningstar':      {'domain':'https://morningstar.com',             'pubname':'Morningstar'}, 
-    'wsj':              {'domain':'https://wsj.com',                     'pubname':'Wall Street Journal'}, # ?mod=rsswn
-    'nyt':              {'domain':'https://nytimes.com',                 'pubname':'NewYork Times'}, 
-    'guardian':         {'domain':'https://theguardian.com',             'pubname':'Guardian'}, 
-    'reuters':          {'domain':'https://reuters.com',                 'pubname':'Reuters'}, # ?=불필요, 심각
-    'washingtontimes':  {'domain':'https://washingtontimes.com',         'pubname':'Washington Times'}, 
-    'washingtonpost':   {'domain':'https://washingtonpost.com',          'pubname':'Washington Post'}, # ?=
-    'cbs':              {'domain':'https://cbsnews.com',                 'pubname':'CBS'}, 
-    'marketwatch':      {'domain':'https://marketwatch.com',             'pubname':'MarketWatch'}, # ?= 심각
-    'atlantic':         {'domain':'https://theatlantic.com',             'pubname':'Atlantic'}, 
+          'morningstar': {'pubname': 'Morningstar',                 'domain': ['https://morningstar.com']}, 
+                  'wsj': {'pubname': 'Wall Street Journal',         'domain': ['https://wsj.com']}, # ?mod=rsswn
+                  'nyt': {'pubname': 'NewYork Times',               'domain': ['https://nytimes.com']}, 
+             'guardian': {'pubname': 'Guardian',                    'domain': ['https://theguardian.com']}, 
+              'reuters': {'pubname': 'Reuters',                     'domain': ['https://reuters.com']}, # ?=불필요, 심각
+      'washingtontimes': {'pubname': 'Washington Times',            'domain': ['https://washingtontimes.com']}, 
+       'washingtonpost': {'pubname': 'Washington Post',             'domain': ['https://washingtonpost.com']}, # ?=
+                  'cbs': {'pubname': 'CBS',                         'domain': ['https://cbsnews.com']}, 
+          'marketwatch': {'pubname': 'MarketWatch',                 'domain': ['https://marketwatch.com']}, # ?= 심각
+             'atlantic': {'pubname': 'Atlantic',                    'domain': ['https://theatlantic.com']}, 
 
-    'vice':             {'domain':'https://vice.com',                    'pubname':'VICE'}, 
-    'npr':              {'domain':'https://npr.org',                     'pubname':'npr'}, 
-    'newrepublic':      {'domain':'https://newrepublic.com',             'pubname':'NEW REPUBLIC'}, 
-    'yahoo':            {'domain':'https://yahoo.com',                   'pubname':'yahoo'}, 
-    'independent':      {'domain':'https://independent.co.uk',           'pubname':'INDEPENDENT'}, 
-    'heritage':         {'domain':'https://heritage.org',                'pubname':'Heritage'}, 
-    'zdnet':            {'domain':'https://www.zdnet.com',               'pubname':'ZDNet'}, # 반드시 www가 붙어야함
-    'townhall':         {'domain':'https://townhall.com',                'pubname':'Townhall'}, 
-    'abcnews':          {'domain':'https://abcnews.go.com',              'pubname':'ABC News'}, # ?=많긴한데 반드시필요
-    'hotair':           {'domain':'https://hotair.com',                  'pubname':'HOT AIR'}, 
+                 'vice': {'pubname': 'VICE',                        'domain': ['https://vice.com']}, 
+                  'npr': {'pubname': 'npr',                         'domain': ['https://npr.org']}, 
+          'newrepublic': {'pubname': 'NEW REPUBLIC',                'domain': ['https://newrepublic.com']}, 
+                'yahoo': {'pubname': 'yahoo',                       'domain': ['https://yahoo.com']}, 
+          'independent': {'pubname': 'INDEPENDENT',                 'domain': ['https://independent.co.uk']}, 
+             'heritage': {'pubname': 'Heritage',                    'domain': ['https://heritage.org']}, 
+                'zdnet': {'pubname': 'ZDNet',                       'domain': ['https://www.zdnet.com']}, # 반드시 www가 붙어야함
+             'townhall': {'pubname': 'Townhall',                    'domain': ['https://townhall.com']}, 
+              'abcnews': {'pubname': 'ABC News',                    'domain': ['https://abcnews.go.com']}, # ?=많긴한데 반드시필요
+               'hotair': {'pubname': 'HOT AIR',                     'domain': ['https://hotair.com']}, 
     
-    'cbc':              {'domain':'https://cbc.ca',                      'pubname':'CBC'}, 
-    'nymag':            {'domain':'https://nymag.com',                   'pubname':'NewYork Magazine'}, 
-    'thestreet':        {'domain':'https://www.thestreet.com',           'pubname':'TheStreet'}, # 반드시 www가 붙어야함 
-    'thinkprogress':    {'domain':'https://thinkprogress.org',           'pubname':'ThinkProgress'}, 
-    'dailybeast':       {'domain':'https://thedailybeast.com',           'pubname':'DAILY BEAST'}, 
-    'realclearpolitics':{'domain':'https://www.realclearpolitics.com',   'pubname':'RealClear Politics'}, # 반드시 www가 붙어야함
-    'aljazeera':        {'domain':'https://aljazeera.com',               'pubname':'Al Jazeera'}, 
-#     'arynews':          {'domain':'https://arynews.tv/en',               'pubname':'ARYNEWS'}, 
-#     'afr':              {'domain':'https://afr.com',                     'pubname':'Australian Financial Review'}, 
-#     'axios':            {'domain':'https://axios.com',                   'pubname':'AXIOS'}, # ?utm_source=
+                  'cbc': {'pubname': 'CBC',                         'domain': ['https://cbc.ca']}, 
+                'nymag': {'pubname': 'NewYork Magazine',            'domain': ['https://nymag.com']}, 
+            'thestreet': {'pubname': 'TheStreet',                   'domain': ['https://www.thestreet.com']}, # 반드시 www가 붙어야함 
+        'thinkprogress': {'pubname': 'ThinkProgress',               'domain': ['https://thinkprogress.org']}, 
+           'dailybeast': {'pubname': 'DAILY BEAST',                 'domain': ['https://thedailybeast.com']}, 
+    'realclearpolitics': {'pubname': 'RealClear Politics',          'domain': ['https://www.realclearpolitics.com']}, # 반드시 www가 붙어야함
+            'aljazeera': {'pubname': 'Al Jazeera',                  'domain': ['https://aljazeera.com']}, 
+    
+#               'arynews': {'pubname': 'ARYNEWS',                     'domain': ['https://arynews.tv/en']}, 
+#                   'afr': {'pubname': 'Australian Financial Review', 'domain': ['https://afr.com']}, 
+#                 'axios': {'pubname': 'AXIOS',                       'domain': ['https://axios.com']}, # ?utm_source=
 
-#     'blastingnews':     {'domain':'https://us.blastingnews.com',         'pubname':'Blastingnews'}, 
-#     'breitbart':        {'domain':'https://breitbart.com',               'pubname':'BREITBART'}, 
-#     'dailymail':        {'domain':'https://dailymail.co.uk',             'pubname':'Daily Mail'}, 
-#     'fp':               {'domain':'https://business.financialpost.com',  'pubname':'Financial Post'}, 
-#     'metro':            {'domain':'https://metro.co.uk',                 'pubname':'METRO'}, 
-#     'msnbc':            {'domain':'https://msnbc.com',                   'pubname':'MSNBC'}, 
-#     'nationalreview':   {'domain':'https://nationalreview.com',          'pubname':'NATIONAL REVIEW'}, 
-#     'news24':           {'domain':'https://news24.com',                  'pubname':'News24'}, 
-#     'techcrunch':       {'domain':'https://techcrunch.com',              'pubname':'TechCrunch'}, 
-#     'arstechnica':      {'domain':'https://arstechnica.com',             'pubname':'Ars TECHNICA'}, # ?comments=1
+#          'blastingnews': {'pubname': 'Blastingnews',                'domain': ['https://us.blastingnews.com']}, 
+#             'breitbart': {'pubname': 'BREITBART',                   'domain': ['https://breitbart.com']}, 
+#             'dailymail': {'pubname': 'Daily Mail',                  'domain': ['https://dailymail.co.uk']}, 
+#                    'fp': {'pubname': 'Financial Post',              'domain': ['https://business.financialpost.com']}, 
+#                 'metro': {'pubname': 'METRO',                       'domain': ['https://metro.co.uk']}, 
+#                 'msnbc': {'pubname': 'MSNBC',                       'domain': ['https://msnbc.com']}, 
+#        'nationalreview': {'pubname': 'NATIONAL REVIEW',             'domain': ['https://nationalreview.com']}, 
+#                'news24': {'pubname': 'News24',                      'domain': ['https://news24.com']}, 
+#            'techcrunch': {'pubname': 'TechCrunch',                  'domain': ['https://techcrunch.com']}, 
+#           'arstechnica': {'pubname': 'Ars TECHNICA',                'domain': ['https://arstechnica.com']}, # ?comments=1
 
-#     'euronews':         {'domain':'https://euronews.com',                'pubname':'euronews'}, 
-#     'mirror':           {'domain':'https://mirror.co.uk',                'pubname':'Mirror'}, 
-#     'nbcnews':          {'domain':'https://nbcnews.com',                 'pubname':'NBC News'}, 
-#     'newscomau':        {'domain':'https://news.com.au',                 'pubname':'news.com.au'}, 
-#     'nextbigfuture':    {'domain':'https://nextbigfuture.com',           'pubname':'NextBigFuture'}, 
-#     'rt':               {'domain':'https://rt.com',                      'pubname':'RT'}, 
-#     'americanconserv':  {'domain':'https://theamericanconservative.com', 'pubname':'AmericanConservative'}, # ?print=1
-#     'thehill':          {'domain':'https://thehill.com',                 'pubname':'TheHill'}, 
-#     'tnw':              {'domain':'https://thenextweb.com',              'pubname':'TNW'}, 
-#     'telegraph':        {'domain':'https://telegraph.co.uk',             'pubname':'The Telegraph'}, 
+#              'euronews': {'pubname': 'euronews',                    'domain': ['https://euronews.com']}, 
+#                'mirror': {'pubname': 'Mirror',                      'domain': ['https://mirror.co.uk']}, 
+#               'nbcnews': {'pubname': 'NBC News',                    'domain': ['https://nbcnews.com']}, 
+#             'newscomau': {'pubname': 'news.com.au',                 'domain': ['https://news.com.au']}, 
+#         'nextbigfuture': {'pubname': 'NextBigFuture',               'domain': ['https://nextbigfuture.com']}, 
+#                    'rt': {'pubname': 'RT',                          'domain': ['https://rt.com']}, 
+#       'americanconserv': {'pubname': 'American Conservative',       'domain': ['https://theamericanconservative.com']}, # ?print=1
+#               'thehill': {'pubname': 'TheHill',                     'domain': ['https://thehill.com']}, 
+#                   'tnw': {'pubname': 'TNW',                         'domain': ['https://thenextweb.com']}, 
+#             'telegraph': {'pubname': 'The Telegraph',               'domain': ['https://telegraph.co.uk']}, 
 
-#     'indiatimes':       {'domain':'https://timesofindia.indiatimes.com', 'pubname':'THE TIMES OF INDIA'}, # ?utm_source=
-#     'theverge':         {'domain':'https://theverge.com',                'pubname':'THE VERGE'}, 
-#     'usatoday':         {'domain':'https://usatoday.com',                'pubname':'USA TODAY'}, 
-#     'chinadaily':       {'domain':'https://global.chinadaily.com.cn',    'pubname':'CHINADAILY'}, 
-#     'scmp':             {'domain':'https://scmp.com',                    'pubname':'South China Morning Post'}, 
-#     'japannews':        {'domain':'https://the-japan-news.com',          'pubname':'The Japan News'}, 
-#     'japantoday':       {'domain':'https://japantoday.com',              'pubname':'JAPANTODAY'}, 
-#     'chosun':           {'domain':'https://english.chosun.com',          'pubname':'CHOSUN'}, 
-#     'joongang':         {'domain':'https://koreajoongangdaily.joins.com','pubname':'Joongang Daily'}, 
-#     'arirang':          {'domain':'https://arirang.com',                 'pubname':'arirang'}, 
+#            'indiatimes': {'pubname': 'THE TIMES OF INDIA',          'domain': ['https://timesofindia.indiatimes.com']}, # ?utm_source=
+#              'theverge': {'pubname': 'THE VERGE',                   'domain': ['https://theverge.com']}, 
+#              'usatoday': {'pubname': 'USA TODAY',                   'domain': ['https://usatoday.com']}, 
+#            'chinadaily': {'pubname': 'CHINADAILY',                  'domain': ['https://global.chinadaily.com.cn']}, 
+#                  'scmp': {'pubname': 'South China Morning Post',    'domain': ['https://scmp.com']}, 
+#             'japannews': {'pubname': 'The Japan News',              'domain': ['https://the-japan-news.com']}, 
+#            'japantoday': {'pubname': 'JAPANTODAY',                  'domain': ['https://japantoday.com']}, 
+#                'chosun': {'pubname': 'CHOSUN',                      'domain': ['https://english.chosun.com']}, 
+#              'joongang': {'pubname': 'Joongang Daily',              'domain': ['https://koreajoongangdaily.joins.com']}, 
+#               'arirang': {'pubname': 'arirang',                     'domain': ['https://arirang.com']}, 
 
-#     'ccn':              {'domain':'https://ccn.com',                     'pubname':'CCN'}, 
-#     'cointelegraph':    {'domain':'https://cointelegraph.com',           'pubname':'COINTELEGRAPH'}, 
-#     'cryptocoin':       {'domain':'https://cryptocoin.news',             'pubname':'CryptoCoin.News'}, 
-#     'cryptonews':       {'domain':'https://cryptonews.com',              'pubname':'cryptonews'}, 
+#                   'ccn': {'pubname': 'CCN',                         'domain': ['https://ccn.com']}, 
+#         'cointelegraph': {'pubname': 'COINTELEGRAPH',               'domain': ['https://cointelegraph.com']}, 
+#            'cryptocoin': {'pubname': 'CryptoCoin.News',             'domain': ['https://cryptocoin.news']}, 
+#            'cryptonews': {'pubname': 'cryptonews',                  'domain': ['https://cryptonews.com']}, 
     
     #'forbes':          'https://forbes.com', 
     #'hbr':             'https://hbr.org', 
