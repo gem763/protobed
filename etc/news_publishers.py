@@ -1,19 +1,22 @@
+'''
+src의 key는 domain에 포함되어 있는 글자로 한다
+select_urls()에서 url의 중복을 체크하기 위해 (2019.10.04)
+'''
+
 src = {
              'huffpost': {'pubname': 'HuffPost',                    'domain': ['https://huffpost.com']}, 
                   'cnn': {'pubname': 'CNN',                         'domain': ['https://cnn.com']}, # ?=
-         'investingcom': {'pubname': 'Investing.com',               'domain': ['https://investing.com']}, 
+        'investing.com': {'pubname': 'Investing.com',               'domain': ['https://investing.com']}, 
              'politico': {'pubname': 'POLITICO',                    'domain': ['https://politico.com']}, 
                  'time': {'pubname': 'TIME',                        'domain': ['https://time.com']}, 
                  'cnbc': {'pubname': 'CNBC',                        'domain': ['https://cnbc.com']}, 
                   'fox': {'pubname': 'FOX',                         'domain': ['https://foxnews.com', 'https://foxbusiness.com']}, 
-#               'foxnews': {'pubname': 'FOX News',                    'domain': ['https://foxnews.com']}, 
-#           'foxbusiness': {'pubname': 'FOX Business',                'domain': ['https://foxbusiness.com']}, 
                   'bbc': {'pubname': 'BBC',                         'domain': ['https://bbc.com']}, 
       'businessinsider': {'pubname': 'Business Insider',            'domain': ['https://businessinsider.com']}, 
 
           'morningstar': {'pubname': 'Morningstar',                 'domain': ['https://morningstar.com']}, 
                   'wsj': {'pubname': 'Wall Street Journal',         'domain': ['https://wsj.com']}, # ?mod=rsswn
-                  'nyt': {'pubname': 'NewYork Times',               'domain': ['https://nytimes.com']}, 
+              'nytimes': {'pubname': 'NewYork Times',               'domain': ['https://nytimes.com']}, 
              'guardian': {'pubname': 'Guardian',                    'domain': ['https://theguardian.com']}, 
               'reuters': {'pubname': 'Reuters',                     'domain': ['https://reuters.com']}, # ?=불필요, 심각
       'washingtontimes': {'pubname': 'Washington Times',            'domain': ['https://washingtontimes.com']}, 
@@ -25,7 +28,7 @@ src = {
                  'vice': {'pubname': 'VICE',                        'domain': ['https://vice.com']}, 
                   'npr': {'pubname': 'npr',                         'domain': ['https://npr.org']}, 
           'newrepublic': {'pubname': 'NEW REPUBLIC',                'domain': ['https://newrepublic.com']}, 
-                'yahoo': {'pubname': 'yahoo',                       'domain': ['https://yahoo.com']}, 
+                'yahoo': {'pubname': 'yahoo',                       'domain': ['https://yahoo.com', 'https://news.yahoo.com']}, 
           'independent': {'pubname': 'INDEPENDENT',                 'domain': ['https://independent.co.uk']}, 
              'heritage': {'pubname': 'Heritage',                    'domain': ['https://heritage.org']}, 
                 'zdnet': {'pubname': 'ZDNet',                       'domain': ['https://www.zdnet.com']}, # 반드시 www가 붙어야함
@@ -48,7 +51,7 @@ src = {
 #          'blastingnews': {'pubname': 'Blastingnews',                'domain': ['https://us.blastingnews.com']}, 
 #             'breitbart': {'pubname': 'BREITBART',                   'domain': ['https://breitbart.com']}, 
 #             'dailymail': {'pubname': 'Daily Mail',                  'domain': ['https://dailymail.co.uk']}, 
-#                    'fp': {'pubname': 'Financial Post',              'domain': ['https://business.financialpost.com']}, 
+#         'financialpost': {'pubname': 'Financial Post',              'domain': ['https://business.financialpost.com']}, 
 #                 'metro': {'pubname': 'METRO',                       'domain': ['https://metro.co.uk']}, 
 #                 'msnbc': {'pubname': 'MSNBC',                       'domain': ['https://msnbc.com']}, 
 #        'nationalreview': {'pubname': 'NATIONAL REVIEW',             'domain': ['https://nationalreview.com']}, 
@@ -59,12 +62,12 @@ src = {
 #              'euronews': {'pubname': 'euronews',                    'domain': ['https://euronews.com']}, 
 #                'mirror': {'pubname': 'Mirror',                      'domain': ['https://mirror.co.uk']}, 
 #               'nbcnews': {'pubname': 'NBC News',                    'domain': ['https://nbcnews.com']}, 
-#             'newscomau': {'pubname': 'news.com.au',                 'domain': ['https://news.com.au']}, 
+#           'news.com.au': {'pubname': 'news.com.au',                 'domain': ['https://news.com.au']}, 
 #         'nextbigfuture': {'pubname': 'NextBigFuture',               'domain': ['https://nextbigfuture.com']}, 
 #                    'rt': {'pubname': 'RT',                          'domain': ['https://rt.com']}, 
-#       'americanconserv': {'pubname': 'American Conservative',       'domain': ['https://theamericanconservative.com']}, # ?print=1
+#  'americanconservative': {'pubname': 'American Conservative',       'domain': ['https://theamericanconservative.com']}, # ?print=1
 #               'thehill': {'pubname': 'TheHill',                     'domain': ['https://thehill.com']}, 
-#                   'tnw': {'pubname': 'TNW',                         'domain': ['https://thenextweb.com']}, 
+#            'thenextweb': {'pubname': 'TNW',                         'domain': ['https://thenextweb.com']}, 
 #             'telegraph': {'pubname': 'The Telegraph',               'domain': ['https://telegraph.co.uk']}, 
 
 #            'indiatimes': {'pubname': 'THE TIMES OF INDIA',          'domain': ['https://timesofindia.indiatimes.com']}, # ?utm_source=
@@ -72,7 +75,7 @@ src = {
 #              'usatoday': {'pubname': 'USA TODAY',                   'domain': ['https://usatoday.com']}, 
 #            'chinadaily': {'pubname': 'CHINADAILY',                  'domain': ['https://global.chinadaily.com.cn']}, 
 #                  'scmp': {'pubname': 'South China Morning Post',    'domain': ['https://scmp.com']}, 
-#             'japannews': {'pubname': 'The Japan News',              'domain': ['https://the-japan-news.com']}, 
+#            'japan-news': {'pubname': 'The Japan News',              'domain': ['https://the-japan-news.com']}, 
 #            'japantoday': {'pubname': 'JAPANTODAY',                  'domain': ['https://japantoday.com']}, 
 #                'chosun': {'pubname': 'CHOSUN',                      'domain': ['https://english.chosun.com']}, 
 #              'joongang': {'pubname': 'Joongang Daily',              'domain': ['https://koreajoongangdaily.joins.com']}, 
