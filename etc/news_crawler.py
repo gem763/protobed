@@ -647,13 +647,15 @@ class NewsCrawler:
         따라서 urls의 총 갯수와 UNION(urls)의 갯수는 다를 수 있다
         이는 아래 selecting도 마찬가지 (2019.09.27)
         '''
-        self.urls_collected = collect_urls(self.src)
-        return self._results_sub(self.urls_collected)
+        urls_collected = collect_urls(self.src)
+        self.urls_collected, uniqueness, duplicates, summary_by_pubs = self._results_sub(urls_collected)
+        return uniqueness, duplicates, summary_by_pubs #self._results_sub(self.urls_collected)
 
         
     def select(self):
-        self.urls_selected = select_urls(self.urls_collected)
-        return self._results_sub(self.urls_selected)
+        urls_selected = select_urls(self.urls_collected)
+        self.urls_selected, uniqueness, duplicates, summary_by_pubs = self._results_sub(urls_selected)
+        return uniqueness, duplicates, summary_by_pubs
     
     
     def download(self):
@@ -703,11 +705,21 @@ class NewsCrawler:
         return pd.DataFrame.from_dict(duplicates, orient='index', columns=['pubs', 'actual_pub'])
     
     
+    def _remove_duplicates(self, urls, duplicates):
+        for row in duplicates.itertuples():
+            for pub in row.pubs.split(', '):
+                if pub != row.actual_pub:
+                    urls[pub].remove(row.Index)
+                    
+        return urls
+            
+    
     def _results_sub(self, urls):
         uniqueness = self._uniquenese(urls)
-        summary_by_pubs = self._summary_by_pubs(urls)        
         duplicates = self._duplicates(urls)
-        return uniqueness, summary_by_pubs, duplicates
+        urls = self._remove_duplicates(urls, duplicates)
+        summary_by_pubs = self._summary_by_pubs(urls)
+        return urls, uniqueness, duplicates, summary_by_pubs
     
     
     def _results_final(self, urls_final):
