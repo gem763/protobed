@@ -25,7 +25,7 @@ src = {
           'marketwatch': {'pubname': 'MarketWatch',                 'domain': ['https://marketwatch.com']}, # ?= 심각
              'atlantic': {'pubname': 'Atlantic',                    'domain': ['https://theatlantic.com']}, 
 
-                 'vice': {'pubname': 'VICE',                        'domain': ['https://vice.com']}, 
+                 'vice': {'pubname': 'VICE',                        'domain': ['https://www.vice.com/en_us']}, 
                   'npr': {'pubname': 'npr',                         'domain': ['https://npr.org']}, 
           'newrepublic': {'pubname': 'NEW REPUBLIC',                'domain': ['https://newrepublic.com']}, 
                 'yahoo': {'pubname': 'yahoo',                       'domain': ['https://yahoo.com', 'https://news.yahoo.com']}, 
