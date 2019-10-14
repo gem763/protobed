@@ -1,5 +1,6 @@
 import re
 from spacy.pipeline import EntityRuler
+import gensim
 
 
 class MergedTokenizer:
@@ -53,7 +54,9 @@ class MergedTokenizer:
     
     
     def _preprocess(self, rawtext):
-        return re.sub(r'\n+', r'\n', rawtext)
+        rawtext = re.sub(r'\n+', r'\n', rawtext)
+        rawtext = gensim.utils.simple_preprocess(rawtext, deacc=True)
+        return ' '.join(rawtext)
     
     
     def _postprocess(self, doc):
