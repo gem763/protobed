@@ -33,6 +33,24 @@ def _config():
     return config
 
 
+class Progressor:
+    def __init__(self, ntotal, formater_suffix=None):
+        self.start = time.time()
+        self.n_total = ntotal
+        self.n_progressed = 0
+        self.formater = '\r{pct:.2f}% ({timestamp:.2f} seconds)'
+
+        if formater_suffix:
+            self.formater += (': ' + formater_suffix)
+
+    def stamp(self, **vargs):
+        self.n_progressed += 1
+        pct = self.n_progressed / self.n_total * 100
+        timestamp = time.time() - self.start
+        print(self.formater.format(pct=pct, timestamp=timestamp, **vargs), end='')
+        
+
+
 def clean_url(pub, url):
     url = url.replace('http://', 'https://')
 
@@ -72,7 +90,7 @@ def clean_url(pub, url):
         except: pass
     
     if pub=='wsj':
-    # wsj paywall 뚫기
+    # wsj paywall 뚫기 (이제 이거 안먹힌다 2019.10.10)
         try: url = url[:url.index('?mod=')]
         except: pass
         
@@ -85,22 +103,6 @@ def clean_url(pub, url):
     return url
 
 
-class Progressor:
-    def __init__(self, ntotal, formater_suffix=None):
-        self.start = time.time()
-        self.n_total = ntotal
-        self.n_progressed = 0
-        self.formater = '\r{pct:.2f}% ({timestamp:.2f} seconds)'
-
-        if formater_suffix:
-            self.formater += (': ' + formater_suffix)
-
-    def stamp(self, **vargs):
-        self.n_progressed += 1
-        pct = self.n_progressed / self.n_total * 100
-        timestamp = time.time() - self.start
-        print(self.formater.format(pct=pct, timestamp=timestamp, **vargs), end='')
-        
 
 def collect_urls(src):
     prg = Progressor(len(src), formater_suffix='Collecting URLs... {pub:<20}')
@@ -109,7 +111,6 @@ def collect_urls(src):
     async def geturls(pub, *domains):
         urls = set()
         
-        #if pub=='fox': set_trace()
         for domain in domains:
             resp = await loop.run_in_executor(None, newspaper_config, domain)
             urls |= {clean_url(pub, article.url) for article in resp.articles}
@@ -139,6 +140,7 @@ def collect_urls(src):
     finally:
         loop.close()
 
+    print('\n')
     return result        
         
 
@@ -224,10 +226,6 @@ def get_publish_time(article):
     return _timize(pubtime)
 
 
-# def fpath_of(hash_url, dirname_len=3):
-#     ext = '.json'
-#     return os.path.join(hash_url[dirname_len], hash_url + ext)
-
 
 def select_urls(urls):
     prg = Progressor(len(urls), formater_suffix='Selecting URLs... {pub:<20}')
@@ -240,19 +238,19 @@ def select_urls(urls):
 
         for _url in _urls:
             hash_url = hashlib.sha1(_url.encode('utf-8')).hexdigest()
-            
-            file_in_saved = os.path.join(basedir, 'saved', hash_url[:3], hash_url + ext)
+
+            # file_in_saved = os.path.join(basedir, 'saved', hash_url[:3], hash_url + ext)
             file_in_downloaded = os.path.join(basedir, 'downloaded', hash_url + ext)
             file_in_trashed = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
 
-            if os.path.isfile(file_in_saved) or os.path.isfile(file_in_downloaded) or os.path.isfile(file_in_trashed):
+            if os.path.isfile(file_in_downloaded) or os.path.isfile(file_in_trashed): # or os.path.isfile(file_in_saved):
                 continue
-                
+
             else:
                 selected[pub].add(_url)
-                
+
         prg.stamp(pub=pub)
-                
+
     return selected
 
 
@@ -262,18 +260,18 @@ def download(urls):
     basedir = os.path.join(os.getcwd(), 'newsdata')
     ext = '.json'
     newspaper_config = _config()
-    
-        
+
+
     def makedir_if_not_exists(file):
         _dir = os.path.dirname(file)
-        
+
         if not os.path.isdir(_dir):
             os.makedirs(_dir)
-            
-            
+
+
     def detect_lang(article):
         lang = article.meta_lang
-        
+
         if lang=='':
             return detect(article.text)
         
@@ -473,165 +471,6 @@ def download(urls):
 
 
 
-def download2(urls):
-    n_total = sum([len(v) for _,v in urls.items()])
-    prg = Progressor(n_total, formater_suffix='downloading... {pub:<20}')
-    basedir = os.path.join(os.getcwd(), 'newsdata')
-    ext = '.json'
-    newspaper_config = _config()
-    
-        
-    def makedir_if_not_exists(file):
-        _dir = os.path.dirname(file)
-        
-        if not os.path.isdir(_dir):
-            os.makedirs(_dir)
-            
-            
-    def detect_lang(article):
-        lang = article.meta_lang
-        
-        if lang=='':
-            return detect(article.text)
-        
-        else:
-            return lang
-            
-    
-    def get_article(url):
-        article = Article(url, config=newspaper_config)
-        article.download()
-        article.parse()
-        return article
-        
-        
-    def get_title(article):
-        if article.title in ['', '-', None]:
-        # '':cbc, '-':townhall
-            html = requests.get(article.url).text
-            extracted_title = extraction.Extractor().extract(html, source_url=article.url).title
-            
-            if extracted_title in ['', '-', None]:
-                if article.description=='':
-                    return article.pub
-                else:
-                    return article.description
-                
-            else:
-                return extracted_title
-            
-        else:
-            return article.title
-        
-    
-    async def _download(pub, _urls):
-        out = {'downloaded':set(), 'trashed':set()}
-        
-        for url in _urls:
-            is_downloaded = False
-            hash_url = hashlib.sha1(url.encode('utf-8')).hexdigest()
-            #downloaded_at = pd.Timestamp.utcnow()
-
-            #########################
-            trashed_file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
-            js = json.loads(Path(trashed_file).read_text())
-            downloaded_at = pd.Timestamp(js['downloaded_at'])
-                
-            url = clean_url(pub, url)
-            hash_url = hashlib.sha1(url.encode('utf-8')).hexdigest()
-            #########################
-            
-            content = {
-                'pub': pub, 
-                'url': url, 
-                'downloaded_at': str(downloaded_at)
-            }
-            
-            try: 
-                article = await loop.run_in_executor(None, get_article, url)
-                title = await loop.run_in_executor(None, get_title, article)
-                content['title'] = title
-                
-                # 1. 텍스트가 없다면
-                if article.text == '':
-                    content['error'] = 'no text'
-
-                else:
-                    # 2. 텍스트가 너무 짧다면
-                    if (not article.is_valid_body()) and (len(article.text)<500):
-                        content['error'] = 'too short'
-                
-                    else:
-                        language = detect_lang(article)
-                        content['language'] = language
-                        
-                        # 3. 영어가 아니라면
-                        if language != 'en':
-                            content['error'] = 'not english'
-
-                        else:
-                            is_downloaded = True
-                            published_at = await loop.run_in_executor(None, get_publish_time, article)
-
-                            if published_at == None:
-                                published_at = downloaded_at
-
-                            content['text'] = article.text
-                            content['description'] = article.meta_description
-                            content['authors'] = article.authors
-                            content['top_image'] = article.top_image if article.top_image.split('.')[-1]!='ico' else ''
-                            content['published_at'] = str(published_at.date()) if published_at<=downloaded_at else str(downloaded_at.date())
-
-            except:
-                content['error'] = 'something wrong'
-
-
-            if is_downloaded:
-                file = os.path.join(basedir, 'downloaded', hash_url + ext)
-                out['downloaded'].add(url)
-                Path(trashed_file).unlink()
-                
-            else:
-                file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
-                out['trashed'].add(url)
-                
-                
-            makedir_if_not_exists(file)
-            with open(file, 'w') as f:
-                json.dump(content, f)
-            
-                
-            # 종종 100%가 넘어가는 경우가 있다
-            # set.union(*urls.values()) 에 중복항목이 있는 듯: 요건 set이라서 문제였던것 같다. 해결한듯 (2019.09.27)
-            prg.stamp(pub=pub)
-            
-        return pub, out
-
-
-    async def main():
-        fts = [asyncio.ensure_future(_download(pub, _urls)) for pub, _urls in urls.items()]
-        return await asyncio.gather(*fts)
-
-    
-    result = None
-    asyncio.set_event_loop(asyncio.new_event_loop())
-    loop = asyncio.get_event_loop()
-
-    try:
-        result = loop.run_until_complete(main())
-        result = dict(result)
-
-    except Exception as ex:
-        #pass
-        print(ex)
-
-    finally:
-        loop.close()
-        
-    return result
-
-
-
 class NewsCrawler:
     def __init__(self, *pubs):
         if len(pubs) == 0:
@@ -642,48 +481,54 @@ class NewsCrawler:
             
 
     def collect(self):
-        '''
-        collecting 과정에서 pub간에 겹치는 url이 있을 수 있다
-        따라서 urls의 총 갯수와 UNION(urls)의 갯수는 다를 수 있다
-        이는 아래 selecting도 마찬가지 (2019.09.27)
-        '''
-        urls_collected = collect_urls(self.src)
-        self.urls_collected, uniqueness, duplicates, summary_by_pubs = self._results_sub(urls_collected)
-        return uniqueness, duplicates, summary_by_pubs #self._results_sub(self.urls_collected)
-
+        collected = collect_urls(self.src)
+        duplicates = self._duplicates(collected)
+        collected_unique = self._remove_duplicates(collected, duplicates)
+        selected = select_urls(collected_unique)
+        summary = self._summary(collected=collected, collected_unique=collected_unique, selected=selected).sort_values('selected', ascending=False)
         
-    def select(self):
-        urls_selected = select_urls(self.urls_collected)
-        self.urls_selected, uniqueness, duplicates, summary_by_pubs = self._results_sub(urls_selected)
-        return uniqueness, duplicates, summary_by_pubs
-    
+        self.collected = collected
+        self.collected_unique = collected_unique
+        self.selected = selected
+        self.duplicates = duplicates
+        self.collect_summary = summary
+        
+        return summary, duplicates
+        
+        
     
     def download(self):
-        '''
-        collecting, selecting 과정에서 pub간의 겹치는 url이 있었으나, 
-        download된 파일명은 url의 hashcode이므로, 모든 파일은 유니크한 url만 담고있다
-        async download 과정에서, 나중에 받아진 내용으로 이전 파일을 덮어쓴다 (2019.09.27)
-        '''
-        self.urls_final = download(self.urls_selected)
-        return self._results_final(self.urls_final)
-
-    
-    def download2(self):
-        self.urls_final = download2(self.urls_selected)
-        return self._results_final(self.urls_final)    
-    
+        downloaded = download(self.selected)
+        downloaded_ = self._rearange_downloaded_dict(downloaded)
+        summary = self._summary(**downloaded_)
+        summary['total'] = summary.sum(axis=1)
+        summary = summary.sort_values('total', ascending=False)
         
-    def _summary_by_pubs(self, urls):
-        return pd.Series({pub:len(_urls) for pub, _urls in urls.items()})
-    
-    
-    def _uniquenese(self, urls):
-        urls_list = sum([list(v) for _,v in urls.items()], [])
-        n_total = len(urls_list)
-        n_unique = len(set(urls_list))
-        return pd.Series({'n_total':n_total, 'n_unique':n_unique})
+        self.downloaded = downloaded
+        self.download_summary = summary
+        
+        return summary
+        
 
     
+    def _rearange_downloaded_dict(self, d):
+        _d = {'downloaded':{}, 'trashed':{}}
+        for pub, urls in d.items():
+            for cat, _urls in urls.items():
+                _d[cat][pub] = _urls
+        return _d
+    
+    
+    def _summary(self, **urls):
+        df = {}
+        for k,v in urls.items():
+            df[k] = {pub:len(_urls) for pub, _urls in v.items()}
+
+        df = pd.DataFrame(df)
+        return pd.DataFrame(df.sum(), columns=['all']).T.append(df)
+
+        
+        
     def _duplicates(self, urls):
         urls_tmp = {k:{_v:1 for _v in v} for k,v in urls.items()}
         df_dupl = pd.DataFrame.from_dict(urls_tmp, orient='columns')
@@ -702,26 +547,16 @@ class NewsCrawler:
 
             duplicates[url] = [', '.join(pubs), actual_pub]
 
-        return pd.DataFrame.from_dict(duplicates, orient='index', columns=['pubs', 'actual_pub'])
+        duplicates = pd.DataFrame.from_dict(duplicates, orient='index').reset_index()
+        duplicates.columns = ['url', 'pubs', 'actual_pub']
+        return duplicates
     
     
     def _remove_duplicates(self, urls, duplicates):
+        _removed = urls.copy()
         for row in duplicates.itertuples():
             for pub in row.pubs.split(', '):
                 if pub != row.actual_pub:
-                    urls[pub].remove(row.Index)
+                    _removed[pub].remove(row.url)
                     
-        return urls
-            
-    
-    def _results_sub(self, urls):
-        uniqueness = self._uniquenese(urls)
-        duplicates = self._duplicates(urls)
-        urls = self._remove_duplicates(urls, duplicates)
-        summary_by_pubs = self._summary_by_pubs(urls)
-        return urls, uniqueness, duplicates, summary_by_pubs
-    
-    
-    def _results_final(self, urls_final):
-        tmp = {pub:{state:len(_urls) for state, _urls in urls.items()} for pub,urls in urls_final.items()}
-        return pd.DataFrame.from_dict(tmp, orient='index')
+        return _removed
