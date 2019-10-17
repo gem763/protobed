@@ -5,6 +5,7 @@ from IPython.core.debugger import set_trace
 from IPython.display import display
 import extraction
 import requests
+import copy
 import json
 import os
 import time
@@ -553,7 +554,7 @@ class NewsCrawler:
     
     
     def _remove_duplicates(self, urls, duplicates):
-        _removed = urls.copy()
+        _removed = copy.deepcopy(urls)
         for row in duplicates.itertuples():
             for pub in row.pubs.split(', '):
                 if pub != row.actual_pub:
