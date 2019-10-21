@@ -325,7 +325,7 @@ def download(urls):
                 article = await loop.run_in_executor(None, get_article, url)
                 title = await loop.run_in_executor(None, get_title, article)
                 content['title'] = title
-                
+
                 # 1. 텍스트가 없다면
                 if article.text == '':
                     content['error'] = 'no text'
@@ -334,11 +334,11 @@ def download(urls):
                     # 2. 텍스트가 너무 짧다면
                     if (not article.is_valid_body()) and (len(article.text)<500):
                         content['error'] = 'too short'
-                
+
                     else:
                         language = detect_lang(article)
                         content['language'] = language
-                        
+
                         # 3. 영어가 아니라면
                         if language != 'en':
                             content['error'] = 'not english'
@@ -363,12 +363,12 @@ def download(urls):
             if is_downloaded:
                 file = os.path.join(basedir, 'downloaded', hash_url + ext)
                 out['downloaded'].add(url)
-                
+
             else:
                 file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
                 out['trashed'].add(url)
-                
-                
+
+
             makedir_if_not_exists(file)
             with open(file, 'w') as f:
                 json.dump(content, f)
