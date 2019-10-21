@@ -504,6 +504,7 @@ class NewsCrawler:
         summary = self._summary(**downloaded_)
         summary['total'] = summary.sum(axis=1)
         summary = summary.sort_values('total', ascending=False)
+        summary = pd.concat({'collect':self.collect_summary, 'download':summary}, axis=1, sort=False)
         
         self.downloaded = downloaded
         self.download_summary = summary
