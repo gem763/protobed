@@ -240,7 +240,7 @@ def select_urls(urls):
         for _url in _urls:
             hash_url = hashlib.sha1(_url.encode('utf-8')).hexdigest()
 
-            # file_in_saved = os.path.join(basedir, 'saved', hash_url[:3], hash_url + ext)
+            #file_in_downloaded = os.path.join(basedir, 'downloaded', hash_url[:3], hash_url + ext)
             file_in_downloaded = os.path.join(basedir, 'downloaded', hash_url + ext)
             file_in_trashed = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
 
@@ -361,6 +361,7 @@ def download(urls):
 
 
             if is_downloaded:
+                #file = os.path.join(basedir, 'downloaded', hash_url[:3], hash_url + ext)
                 file = os.path.join(basedir, 'downloaded', hash_url + ext)
                 out['downloaded'].add(url)
 
