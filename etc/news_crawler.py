@@ -13,6 +13,7 @@ import hashlib
 import glob
 import pandas as pd
 import news_publishers
+from record import Recorder
 from pathlib import Path
 from langdetect import detect
 from pubtime_extractor import extractArticlePublishedDate
@@ -228,7 +229,7 @@ def get_publish_time(article):
 
 
 
-def select_urls(urls):
+def select_urls(urls, recorder):
     prg = Progressor(len(urls), formater_suffix='Selecting URLs... {pub:<20}')
     selected = {}
     basedir = os.path.join(os.getcwd(), 'newsdata')
@@ -241,10 +242,12 @@ def select_urls(urls):
             hash_url = hashlib.sha1(_url.encode('utf-8')).hexdigest()
 
             #file_in_downloaded = os.path.join(basedir, 'downloaded', hash_url[:3], hash_url + ext)
-            file_in_downloaded = os.path.join(basedir, 'downloaded', hash_url + ext)
-            file_in_trashed = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
 
-            if os.path.isfile(file_in_downloaded) or os.path.isfile(file_in_trashed): # or os.path.isfile(file_in_saved):
+            #file_in_downloaded = os.path.join(basedir, 'downloaded', hash_url + ext)
+            #file_in_trashed = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
+
+            #if os.path.isfile(file_in_downloaded) or os.path.isfile(file_in_trashed): 
+            if recorder.has(hash_url):
                 continue
 
             else:
@@ -255,7 +258,7 @@ def select_urls(urls):
     return selected
 
 
-def download(urls):
+def download(urls, recorder):
     n_total = sum([len(v) for _,v in urls.items()])
     prg = Progressor(n_total, formater_suffix='Downloading... {pub:<20}')
     basedir = os.path.join(os.getcwd(), 'newsdata')
@@ -308,6 +311,78 @@ def download(urls):
 
         
     async def _download(pub, _urls):
+        out = {'downloaded':set(), 'trashed':set()}
+        downloaded = {}
+        trashed = {}
+        
+        for url in _urls:
+            hash_url = hashlib.sha1(url.encode('utf-8')).hexdigest()
+            downloaded_at = pd.Timestamp.utcnow()
+            is_downloaded = False
+            
+            content = {
+                'pub': pub, 
+                'url': url, 
+                'downloaded_at': str(downloaded_at)
+            }
+            
+            try: 
+                article = await loop.run_in_executor(None, get_article, url)
+                title = await loop.run_in_executor(None, get_title, article)
+                content['title'] = title
+
+                # 1. 텍스트가 없다면
+                if article.text == '':
+                    content['error'] = 'no text'
+
+                else:
+                    # 2. 텍스트가 너무 짧다면
+                    if (not article.is_valid_body()) and (len(article.text)<500):
+                        content['error'] = 'too short'
+
+                    else:
+                        language = detect_lang(article)
+                        content['language'] = language
+
+                        # 3. 영어가 아니라면
+                        if language != 'en':
+                            content['error'] = 'not english'
+
+                        else:
+                            is_downloaded = True
+                            published_at = await loop.run_in_executor(None, get_publish_time, article)
+
+                            if published_at == None:
+                                published_at = downloaded_at
+
+                            content['text'] = article.text
+                            content['description'] = article.meta_description
+                            content['authors'] = article.authors
+                            content['top_image'] = article.top_image if article.top_image.split('.')[-1]!='ico' else ''
+                            content['published_at'] = str(published_at.date()) if published_at<=downloaded_at else str(downloaded_at.date())
+
+            except:
+                content['error'] = 'something wrong'
+
+
+            if is_downloaded:
+                downloaded[hash_url] = content
+                out['downloaded'].add(url)
+
+            else:
+                trashed[hash_url] = content
+                out['trashed'].add(url)
+            
+            
+            # 종종 100%가 넘어가는 경우가 있다
+            # set.union(*urls.values()) 에 중복항목이 있는 듯: 요건 set이라서 문제였던것 같다. 해결한듯 (2019.09.27)
+            prg.stamp(pub=pub)
+            
+        recorder.update(downloaded=downloaded, trashed=trashed, chunksize=1000, subdir_len=3)
+        return pub, out
+    
+
+    async def _download_old(pub, _urls):
         out = {'downloaded':set(), 'trashed':set()}
         
         for url in _urls:
@@ -381,75 +456,8 @@ def download(urls):
             
         return pub, out
     
-        
     
-    async def _download_old(pub, _urls):
-        out = {'downloaded':set(), 'trashed':set()}
-        
-        for url in _urls:
-            hash_url = hashlib.sha1(url.encode('utf-8')).hexdigest()
-            downloaded_at = pd.Timestamp.utcnow()
-            
-            content = {
-                'pub': pub, 
-                'url': url, 
-                'downloaded_at': str(downloaded_at)
-            }
-            
-            try: 
-                article = await loop.run_in_executor(None, get_article, url)
-                title = await loop.run_in_executor(None, get_title, article)
-                published_at = await loop.run_in_executor(None, get_publish_time, article)
-                
-                if published_at == None:
-                    published_at = downloaded_at
-                
-                text = article.text
-                language = detect_lang(article)
-                is_too_short = (not article.is_valid_body()) and (len(article.text)<500)
-                    
-                content['published_at'] = str(published_at.date()) if published_at<=downloaded_at else str(downloaded_at.date())
-                content['title'] = title
-                content['language'] = language
-                
-                if text == '':
-                    file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
-                    content['error'] = 'no text'
-                    out['trashed'].add(url)
-                    
-                elif is_too_short:
-                    file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
-                    content['error'] = 'too short'
-                    out['trashed'].add(url)
-                    
-                elif language != 'en':
-                    file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
-                    content['error'] = 'not english'
-                    out['trashed'].add(url)
-
-                else:
-                    file = os.path.join(basedir, 'downloaded', hash_url + ext)
-                    content['text'] = text
-                    content['description'] = article.meta_description
-                    content['authors'] = article.authors
-                    content['top_image'] = article.top_image if article.top_image.split('.')[-1]!='ico' else ''
-                    out['downloaded'].add(url)
-            
-            except:
-                file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
-                content['error'] = 'something wrong'
-                out['trashed'].add(url)
-            
-            
-            makedir_if_not_exists(file)
-            with open(file, 'w') as f:
-                json.dump(content, f)
-            
-            prg.stamp(pub=pub)
-            
-        return pub, out
-
-
+    
     async def main():
         fts = [asyncio.ensure_future(_download(pub, _urls)) for pub, _urls in urls.items()]
         return await asyncio.gather(*fts)
@@ -474,19 +482,21 @@ def download(urls):
 
 
 class NewsCrawler:
-    def __init__(self, *pubs):
+    def __init__(self, *pubs, storage='local'):
+        self.recorder = Recorder(storage=storage)
+
         if len(pubs) == 0:
             self.src = news_publishers.src
-            
+
         else:
             self.src = {k:v for k,v in news_publishers.src.items() if k in pubs}
-            
+
 
     def collect(self):
         collected = collect_urls(self.src)
         duplicates = self._duplicates(collected)
         collected_unique = self._remove_duplicates(collected, duplicates)
-        selected = select_urls(collected_unique)
+        selected = select_urls(collected_unique, self.recorder)
         summary = self._summary(collected=collected, collected_unique=collected_unique, selected=selected).sort_values('selected', ascending=False)
         
         self.collected = collected
@@ -500,7 +510,7 @@ class NewsCrawler:
         
     
     def download(self):
-        downloaded = download(self.selected)
+        downloaded = download(self.selected, self.recorder)
         downloaded_ = self._rearange_downloaded_dict(downloaded)
         summary = self._summary(**downloaded_)
         summary['total'] = summary.sum(axis=1)
@@ -550,16 +560,24 @@ class NewsCrawler:
 
             duplicates[url] = [', '.join(pubs), actual_pub]
 
-        duplicates = pd.DataFrame.from_dict(duplicates, orient='index').reset_index()
-        duplicates.columns = ['url', 'pubs', 'actual_pub']
-        return duplicates
+        if len(duplicates) == 0:
+            return None
+        
+        else:
+            duplicates = pd.DataFrame.from_dict(duplicates, orient='index').reset_index()
+            duplicates.columns = ['url', 'pubs', 'actual_pub']
+            return duplicates
     
     
     def _remove_duplicates(self, urls, duplicates):
-        _removed = copy.deepcopy(urls)
-        for row in duplicates.itertuples():
-            for pub in row.pubs.split(', '):
-                if pub != row.actual_pub:
-                    _removed[pub].remove(row.url)
-                    
-        return _removed
+        if duplicates is None:
+            return urls
+        
+        else:
+            _removed = copy.deepcopy(urls)
+            for row in duplicates.itertuples():
+                for pub in row.pubs.split(', '):
+                    if pub != row.actual_pub:
+                        _removed[pub].remove(row.url)
+
+            return _removed
