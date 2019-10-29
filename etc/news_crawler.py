@@ -360,7 +360,15 @@ def download(urls, recorder):
                             content['authors'] = article.authors
                             content['top_image'] = article.top_image if article.top_image.split('.')[-1]!='ico' else ''
                             content['published_at'] = str(published_at.date()) if published_at<=downloaded_at else str(downloaded_at.date())
-
+            
+            except KeyboardInterrupt as ki:
+                '''
+                이 catch가 없다면, keyboardInterrupt가 발생하는 경우 
+                이를 모두 "something wrong"으로 처리해 버린다
+                '''
+                print('\ninterrupted by keyboard')
+                break
+            
             except:
                 content['error'] = 'something wrong'
 
@@ -470,7 +478,7 @@ def download(urls, recorder):
     try:
         result = loop.run_until_complete(main())
         result = dict(result)
-
+        
     except Exception as ex:
         print(ex)
 
