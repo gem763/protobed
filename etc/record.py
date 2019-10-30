@@ -1,3 +1,4 @@
+import pandas as pd
 import pandas_gbq as gbq
 import json
 from google.oauth2 import service_account
@@ -107,13 +108,14 @@ class Recorder:
     def _update_bigquery(self, newstype, newsdict, chunksize):
         if newsdict is not None:
             if newstype == 'downloaded':
-                tb = table_downloaded
+                tb = table_downloaded + '2'
             elif newstype == 'trashed':
-                tb = table_trashed
-
+                tb = table_trashed + '2'
+               
             df = pd.DataFrame.from_dict(newsdict, orient='index')
             df.index.name = 'id'
-            gbq.to_gbq(df.reset_index(), tb, project_id=proj, if_exists='append', chunksize=chunksize, credentials=credentials)
+            df = df.reset_index()
+            gbq.to_gbq(df, tb, project_id=proj, if_exists='append', chunksize=chunksize, credentials=credentials, progress_bar=False)
             
 
     class DuplicatesInSingleTable(Exception):
