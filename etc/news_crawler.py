@@ -20,6 +20,11 @@ from pubtime_extractor import extractArticlePublishedDate
 import asyncio
 from functools import partial
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.header import Header
+
 # Suppress UnknownTimezoneWarning
 import warnings
 from dateutil.parser import UnknownTimezoneWarning
@@ -397,9 +402,10 @@ def crawl(urls):
 
 
 def record(recorder, downloaded=None, trashed=None):
+    start = time.time()
     print('Recording to ' + recorder.storage + ' storage... ', end='')
     recorder.update(downloaded=downloaded, trashed=trashed, chunksize=1000, subdir_len=3)
-    print('done')
+    print('done ({howlong:.2f} seconds)'.format(howlong=time.time()-start))
 
     
 
@@ -434,8 +440,6 @@ class NewsCrawler:
     
     def crawl(self):
         downloaded, trashed = crawl(self.selected)
-        record(self.recorder, downloaded=downloaded, trashed=trashed)
-        
         urls_downloaded = self._extract_urls(downloaded)
         urls_trashed = self._extract_urls(trashed)
         summary = self._summary(downloaded=urls_downloaded, trashed=urls_trashed)
@@ -449,6 +453,25 @@ class NewsCrawler:
         
         return summary
    
+    
+    def record(self):
+        record(self.recorder, downloaded=self.downloaded, trashed=self.trashed)
+    
+    
+    def report(self):
+        '''
+        구글의 [보안 수준이 낮은 앱의 액세스]를 허용해야한다 (2019.10.31) -> 다른방법 없을까?
+        '''
+        email = 'gem763@gmail.com'        
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = Header('NEWS CRAWLING REPORT', 'utf-8')
+        msg['From'] = email
+        msg['To'] = email
+        msg.attach(MIMEText(self.crawl_summary.to_html(), 'html'))
+        
+        with smtplib.SMTP_SSL('smtp.gmail.com') as smtp:
+            smtp.login(email, 'kkangse1')
+            smtp.send_message(msg)
     
 
     def _extract_urls(self, articles):

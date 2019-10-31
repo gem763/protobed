@@ -94,18 +94,18 @@ class Recorder:
                 path = localpath_to_trashed
             
             for id, article in newsdict.items():
-                '''
-                local storage의 경우, 
-                downloaded는 downloaded 폴더에, 
-                trashed는 trashed/id[:3] 폴더에 저장했다
-                나중에 혹시 local에 저장할 일이 있다면, 저장방식을 통일하는 것이 좋겠다 (2019.10.31)
-                '''
-                if newstype == 'downloaded':
-                    _dir = Path(path)
-                elif newstype == 'trashed':
-                    _dir = Path(path + '/' + id[:subdir_len])
+#                 '''
+#                 local storage의 경우, 
+#                 downloaded는 downloaded 폴더에, 
+#                 trashed는 trashed/id[:3] 폴더에 저장했다
+#                 나중에 혹시 local에 저장할 일이 있다면, 저장방식을 통일하는 것이 좋겠다 (2019.10.31)
+#                 '''
+#                 if newstype == 'downloaded':
+#                     _dir = Path(path)
+#                 elif newstype == 'trashed':
+#                     _dir = Path(path + '/' + id[:subdir_len])
                     
-                #_dir = Path(path + '2')
+                _dir = Path(path + '/' + id[:subdir_len])
                 _dir.mkdir(parents=True, exist_ok=True)
                 fname = id + '.json'
                 fpath = _dir / fname
