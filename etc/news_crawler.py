@@ -232,8 +232,6 @@ def get_publish_time(article):
 def select_urls(urls, recorder):
     prg = Progressor(len(urls), formater_suffix='Selecting URLs... {pub:<20}')
     selected = {}
-    basedir = os.path.join(os.getcwd(), 'newsdata')
-    ext = '.json'
 
     for pub, _urls in urls.items():
         selected[pub] = set()
@@ -241,12 +239,6 @@ def select_urls(urls, recorder):
         for _url in _urls:
             hash_url = hashlib.sha1(_url.encode('utf-8')).hexdigest()
 
-            #file_in_downloaded = os.path.join(basedir, 'downloaded', hash_url[:3], hash_url + ext)
-
-            #file_in_downloaded = os.path.join(basedir, 'downloaded', hash_url + ext)
-            #file_in_trashed = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
-
-            #if os.path.isfile(file_in_downloaded) or os.path.isfile(file_in_trashed): 
             if recorder.has(hash_url):
                 continue
 
@@ -261,8 +253,6 @@ def select_urls(urls, recorder):
 def crawl(urls):
     n_total = sum([len(v) for _,v in urls.items()])
     prg = Progressor(n_total, formater_suffix='Crawling... {pub:<20}')
-    #basedir = os.path.join(os.getcwd(), 'newsdata')
-    #ext = '.json'
     newspaper_config = _config()
     
     downloaded = {}
@@ -355,8 +345,8 @@ def crawl(urls):
 
                             content['text'] = article.text
                             content['description'] = article.meta_description
-                            content['authors'] = article.authors
-                            #content['authors'] = ', '.join(article.authors) if article.authors is not None else None
+                            #content['authors'] = article.authors
+                            content['authors'] = ', '.join(article.authors) if article.authors is not None else None
                             content['top_image'] = article.top_image if article.top_image.split('.')[-1]!='ico' else ''
                             content['published_at'] = str(published_at.date()) if published_at<=downloaded_at else str(downloaded_at.date())
             
@@ -382,99 +372,18 @@ def crawl(urls):
             # 종종 100%가 넘어가는 경우가 있다
             # set.union(*urls.values()) 에 중복항목이 있는 듯: 요건 set이라서 문제였던것 같다. 해결한듯 (2019.09.27)
             prg.stamp(pub=pub)
-        
-        #recorder.update(downloaded=downloaded, trashed=trashed, chunksize=1000, subdir_len=3)
-        #return pub, out
-    
-
-    async def _download_old(pub, _urls):
-        out = {'downloaded':set(), 'trashed':set()}
-        
-        for url in _urls:
-            hash_url = hashlib.sha1(url.encode('utf-8')).hexdigest()
-            downloaded_at = pd.Timestamp.utcnow()
-            is_downloaded = False
-            
-            content = {
-                'pub': pub, 
-                'url': url, 
-                'downloaded_at': str(downloaded_at)
-            }
-            
-            try: 
-                article = await loop.run_in_executor(None, get_article, url)
-                title = await loop.run_in_executor(None, get_title, article)
-                content['title'] = title
-
-                # 1. 텍스트가 없다면
-                if article.text == '':
-                    content['error'] = 'no text'
-
-                else:
-                    # 2. 텍스트가 너무 짧다면
-                    if (not article.is_valid_body()) and (len(article.text)<500):
-                        content['error'] = 'too short'
-
-                    else:
-                        language = detect_lang(article)
-                        content['language'] = language
-
-                        # 3. 영어가 아니라면
-                        if language != 'en':
-                            content['error'] = 'not english'
-
-                        else:
-                            is_downloaded = True
-                            published_at = await loop.run_in_executor(None, get_publish_time, article)
-
-                            if published_at == None:
-                                published_at = downloaded_at
-
-                            content['text'] = article.text
-                            content['description'] = article.meta_description
-                            content['authors'] = article.authors
-                            content['top_image'] = article.top_image if article.top_image.split('.')[-1]!='ico' else ''
-                            content['published_at'] = str(published_at.date()) if published_at<=downloaded_at else str(downloaded_at.date())
-
-            except:
-                content['error'] = 'something wrong'
-
-
-            if is_downloaded:
-                #file = os.path.join(basedir, 'downloaded', hash_url[:3], hash_url + ext)
-                file = os.path.join(basedir, 'downloaded', hash_url + ext)
-                out['downloaded'].add(url)
-
-            else:
-                file = os.path.join(basedir, 'trashed', hash_url[:3], hash_url + ext)
-                out['trashed'].add(url)
-
-
-            makedir_if_not_exists(file)
-            with open(file, 'w') as f:
-                json.dump(content, f)
-            
-            
-            # 종종 100%가 넘어가는 경우가 있다
-            # set.union(*urls.values()) 에 중복항목이 있는 듯: 요건 set이라서 문제였던것 같다. 해결한듯 (2019.09.27)
-            prg.stamp(pub=pub)
-            
-        return pub, out
-    
-    
+   
     
     async def main():
         fts = [asyncio.ensure_future(_crawl(pub, _urls)) for pub, _urls in urls.items()]
         await asyncio.gather(*fts)
     
-    #result = None
+    
     asyncio.set_event_loop(asyncio.new_event_loop())
     loop = asyncio.get_event_loop()
 
     try:
         loop.run_until_complete(main())
-        #result = loop.run_until_complete(main())
-        #result = dict(result)
         
     except Exception as ex:
         print(ex)
@@ -539,26 +448,7 @@ class NewsCrawler:
         self.crawl_summary = summary
         
         return summary
-
-    
-#     def crawl2(self):
-#         crawled, self.downloaded, self.trashed = crawl(self.selected, self.recorder)
-#         crawled_ = self._rearange_crawled_dict(crawled)
-#         summary = self._summary(**crawled_)
-#         summary['total'] = summary.sum(axis=1)
-#         summary = summary.sort_values('total', ascending=False)
-#         summary = pd.concat({'collect':self.collect_summary, 'crawl':summary}, axis=1, sort=False)
-        
-#         summary2 = self._summary(downloaded=self._extract_urls(self.downloaded), trashed=self._extract_urls(self.trashed)).fillna(0).astype(int)
-#         summary2['total'] = summary2.sum(axis=1)
-#         summary2 = summary2.sort_values('total', ascending=False)
-#         summary2 = pd.concat({'collect':self.collect_summary, 'crawl':summary2}, axis=1, sort=False)
-        
-#         self.crawled = crawled
-#         self.crawl_summary = summary
-        
-#         return summary, summary2
-    
+   
     
 
     def _extract_urls(self, articles):
@@ -572,14 +462,6 @@ class NewsCrawler:
         
         return urls
 
-    
-#     def _rearange_crawled_dict(self, d):
-#         _d = {'downloaded':{}, 'trashed':{}}
-#         for pub, urls in d.items():
-#             for cat, _urls in urls.items():
-#                 _d[cat][pub] = _urls
-#         return _d
-    
     
     def _summary(self, **urls):
         df = {}

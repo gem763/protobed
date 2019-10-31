@@ -4,6 +4,7 @@ import json
 from google.oauth2 import service_account
 from IPython.core.debugger import set_trace
 from pathlib import Path
+import time
 
 '''
 Configuration
@@ -31,6 +32,7 @@ class Recorder:
         
         
     def _get_ids(self, storage):
+        start = time.time()
         print('checking ' + storage + ' storage... ', end='')
 
         if storage == 'bigquery':
@@ -58,7 +60,7 @@ class Recorder:
     
         ids = ids_downloaded_set | ids_trashed_set
         
-        print('done')
+        print('done ({howlong:.2f} seconds)'.format(howlong=time.time()-start))
         print('we have total {} articles ({} downloaded, {} trashed)'.format(len(ids), len(ids_downloaded_set), len(ids_trashed_set)))
         return ids
 
@@ -92,6 +94,12 @@ class Recorder:
                 path = localpath_to_trashed
             
             for id, article in newsdict.items():
+                '''
+                local storage의 경우, 
+                downloaded는 downloaded 폴더에, 
+                trashed는 trashed/id[:3] 폴더에 저장했다
+                나중에 혹시 local에 저장할 일이 있다면, 저장방식을 통일하는 것이 좋겠다 (2019.10.31)
+                '''
                 if newstype == 'downloaded':
                     _dir = Path(path)
                 elif newstype == 'trashed':
@@ -108,9 +116,9 @@ class Recorder:
     def _update_bigquery(self, newstype, newsdict, chunksize):
         if newsdict is not None:
             if newstype == 'downloaded':
-                tb = table_downloaded + '2'
+                tb = table_downloaded #+ '2'
             elif newstype == 'trashed':
-                tb = table_trashed + '2'
+                tb = table_trashed #+ '2'
                
             df = pd.DataFrame.from_dict(newsdict, orient='index')
             df.index.name = 'id'
