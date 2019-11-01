@@ -462,15 +462,17 @@ class NewsCrawler:
         '''
         구글의 [보안 수준이 낮은 앱의 액세스]를 허용해야한다 (2019.10.31) -> 다른방법 없을까?
         '''
-        email = 'gem763@gmail.com'        
+        acc_fname = 'smtp_gmail.json'
+        acc = json.loads(Path(acc_fname).read_text())
+        
         msg = MIMEMultipart('alternative')
         msg['Subject'] = Header('NEWS CRAWLING REPORT', 'utf-8')
-        msg['From'] = email
-        msg['To'] = email
+        msg['From'] = acc['from']
+        msg['To'] = ', '.join(acc['to'])
         msg.attach(MIMEText(self.crawl_summary.to_html(), 'html'))
-        
-        with smtplib.SMTP_SSL('smtp.gmail.com') as smtp:
-            smtp.login(email, 'kkangse1')
+
+        with smtplib.SMTP_SSL(acc['host']) as smtp:
+            smtp.login(acc['from'], acc['pw'])
             smtp.send_message(msg)
     
 
