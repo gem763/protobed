@@ -104,3 +104,4 @@ venv.bak/
 .mypy_cache/
 
 /etc/en_core_web_lg-2.1.0.tar.gz
+/etc/protobed-69136f4d0c4b.json
