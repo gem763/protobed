@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <title>Flowrence</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  {% load static %}
+  {% block css %}
+  <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:400,800" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="/static/semantic/semantic.min.css">
+
+  <style>
+    * {
+      font-family: 'Nunito Sans', sans-serif;
+    }
+  </style>
+  {% endblock css %}
+</head>
+
+
+<body>
+  <div id="mastheader">
+    {% include "flowrence/header.html" %}
+  </div>
+
+  <div id="mastbody">
+    {% block mastbody %}{% endblock mastbody %}
+  </div>
+
+  <div id="mastfooter">
+    {% include "flowrence/footer.html" %}
+  </div>
+
+  {% block js %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="/static/semantic/semantic.min.js"></script>
+  <script>
+    $('#detector').visibility({
+      once: false,
+      onTopPassed: function() {
+        $('#topheader').transition('fade in');
+      },
+      onTopPassedReverse: function() {
+        $('#topheader').transition('fade out');
+      }
+    });
+
+    $('#topheader .item, #topbanner .item').popup({position: 'bottom center'});
+    $('.item').click(function() {
+      console.log(1111111111);
+    })
+  </script>
+  {% endblock js %}
+
+</body>
+</html>

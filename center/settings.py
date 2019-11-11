@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'geenie',
+    'flowrence',
     'data',
 ]
 
@@ -78,46 +78,46 @@ WSGI_APPLICATION = 'center.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+
+# if os.getenv('GAE_APPLICATION', None):
+#     # Running on production App Engine, so connect to Google Cloud SQL using
+#     # the unix socket at /cloudsql/<your-cloudsql-connection string>
+#     DATABASES = {
+#         'default': {
+#             # 'ENGINE': 'django.db.backends.mysql',
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'HOST': '/cloudsql/protobed:us-central1:protobed-db',
+#             'USER': 'postgres',
+#             'PASSWORD': 'kkangse1',
+#             'NAME': 'postgresdb',
+#         }
 #     }
-# }
-
-if os.getenv('GAE_APPLICATION', None):
-    # Running on production App Engine, so connect to Google Cloud SQL using
-    # the unix socket at /cloudsql/<your-cloudsql-connection string>
-    DATABASES = {
-        'default': {
-            # 'ENGINE': 'django.db.backends.mysql',
-            'ENGINE': 'django.db.backends.postgresql',
-            'HOST': '/cloudsql/protobed:us-central1:protobed-db',
-            'USER': 'postgres',
-            'PASSWORD': 'kkangse1',
-            'NAME': 'postgresdb',
-        }
-    }
-
-else:
-    # Running locally so connect to either a local MySQL instance or connect to
-    # Cloud SQL via the proxy. To start the proxy via command line:
-    #
-    #     $ cloud_sql_proxy -instances=[INSTANCE_CONNECTION_NAME]=tcp:3306
-    #
-    # See https://cloud.google.com/sql/docs/mysql-connect-proxy
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'HOST': '127.0.0.1',
-            'PORT': '5432',
-            'NAME': 'postgresdb',      # sql 인스턴스에서 실제로 생성된 db 명칭 (인스턴스명 아님)
-                                           # https://console.cloud.google.com/sql/instances/getchdb-001/databases?project=getch-245810
-            'USER': 'postgres',            # sql 사용자계정 (IAM 서비스계정 아님)
-                                           # https://console.cloud.google.com/sql/instances/getchdb-001/users?project=getch-245810
-            'PASSWORD': 'kkangse1',
-        }
-    }
+#
+# else:
+#     # Running locally so connect to either a local MySQL instance or connect to
+#     # Cloud SQL via the proxy. To start the proxy via command line:
+#     #
+#     #     $ cloud_sql_proxy -instances=[INSTANCE_CONNECTION_NAME]=tcp:3306
+#     #
+#     # See https://cloud.google.com/sql/docs/mysql-connect-proxy
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'HOST': '127.0.0.1',
+#             'PORT': '5432',
+#             'NAME': 'postgresdb',      # sql 인스턴스에서 실제로 생성된 db 명칭 (인스턴스명 아님)
+#                                            # https://console.cloud.google.com/sql/instances/getchdb-001/databases?project=getch-245810
+#             'USER': 'postgres',            # sql 사용자계정 (IAM 서비스계정 아님)
+#                                            # https://console.cloud.google.com/sql/instances/getchdb-001/users?project=getch-245810
+#             'PASSWORD': 'kkangse1',
+#         }
+#     }
 
 
 # Password validation
