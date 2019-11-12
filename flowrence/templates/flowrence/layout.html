@@ -23,10 +23,12 @@
 
 <body>
   <div id="mastheader">
-    {% include "flowrence/header.html" %}
+    {% block mastheader %}
+    {% include "flowrence/header.html" with type="top_only" %}
+    {% endblock mastheader %}
   </div>
 
-  <div id="mastbody">
+  <div id="mastbody" style="margin-top:100px;">
     {% block mastbody %}{% endblock mastbody %}
   </div>
 
@@ -37,8 +39,9 @@
   {% block js %}
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="/static/semantic/semantic.min.js"></script>
+
   <script>
-    $('#detector').visibility({
+    $('#banner .detector').visibility({
       once: false,
       onTopPassed: function() {
         $('#topheader').transition('fade in');
@@ -48,10 +51,22 @@
       }
     });
 
+
     $('#topheader .item, #topbanner .item').popup({position: 'bottom center'});
-    $('.item').click(function() {
-      console.log(1111111111);
-    })
+
+    $('.my.signin.item').click(function() {
+      $('.signin-checkbox').prop('checked', true);
+    });
+
+    $('.signin-modal .dismiss').click(function() {
+      $('.signin-checkbox').prop('checked', false);
+    });
+
+    $(document).click(function(event) {
+      if (!$(event.target).closest('.signin-modal, .my.item').length) {
+        $('.signin-checkbox').prop('checked', false);
+      }
+    });
   </script>
   {% endblock js %}
 

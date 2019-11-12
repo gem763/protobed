@@ -29,6 +29,13 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
+# 소셜로그인 기능 사용하기
+# https://django-allauth.readthedocs.io/en/latest/installation.html#django
+# https://ldgeao99.tistory.com/117
+
+#2983148471713661:aa895db8d3c4425679b37b1f8ddbbc2bf
+#Q60jbPX1POJFmqb0dgGl:5RnWiWQnmln
+#1070422112021-th03c2jjibfvdmvt9ab5cbt0m8em0pjo.apps.googleusercontent.com:fbXaoEl90xvwaj4EI6m0bnZug
 
 INSTALLED_APPS = [
     'django_extensions',
@@ -40,9 +47,64 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.naver',
+    'allauth.socialaccount.providers.facebook',
+    'custom_user',
+
     'flowrence',
     'data',
 ]
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    'facebook': {
+        'METHOD': 'oauth2',
+        'SCOPE': ['email','public_profile'],
+        # 'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+        'FIELDS': [
+            'id',
+            'email',
+            'name',
+            'first_name',
+            'last_name',
+            'verified',
+            'locale',
+            'timezone',
+            'link',
+            'gender',
+            'updated_time'],
+        'EXCHANGE_TOKEN': True,
+        'LOCALE_FUNC': lambda request: 'kr_KR',
+        'VERIFIED_EMAIL': False,
+        'VERSION': 'v2.9' #'v.2.4'
+    }
+}
+
+
+AUTH_USER_MODEL = 'flowrence.CustomEmailUser'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend', # Django 기본 유저모델
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+
+LOGIN_REDIRECT_URL = '/flowrence'
+LOGOUT_REDIRECT_URL = '/'
+
+SITE_ID = 1
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

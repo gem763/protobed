@@ -11,10 +11,13 @@
   }
 
   #topheader {
-    display: none;
     background: white;
     z-index: 2;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  }
+
+  #topheader.hidden {
+    display: none;
   }
 
   #topbanner {
@@ -64,71 +67,108 @@
     margin-top: 20px;
   }
 
-  td .icon {
-    color: black;
+  #signin {
+    background: none;
+    position: fixed;
+    top: 0;
+    width: 100%
   }
 
-  td:hover {
+  #signin > .container {
+    background: none;
+    position: relative;
+  }
+
+  #signin .signin-modal {
+    transform: scale(0);
+    visibility: collapse;
+    background: white;
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    transition: all 0.1s ease;
+    transform-origin: top right;
+  }
+
+  #signin .signin-modal > .container {
+    width: 160px;
+    margin: 0 !important;
+  }
+
+  #signin .signin-modal > .container > h3.header {
+    margin: 10px;
+  }
+
+  #signin .signin-modal .dismiss {
+    margin-top: 10px;
+  }
+
+  #signin .signin-modal .dismiss:hover {
+    opacity: 0.5;
+  }
+
+  #signin .signin-modal table {
+    margin: 0;
+    background: none;
+    border: none;
+  }
+
+  #signin .signin-modal td {
+    width: 80px;
+    height: 80px;
+    border: none;
+  }
+
+  #signin .signin-modal td .icon {
+    color: black;
+    font-size: 40px;
+    background: none;
+    margin: 0;
+  }
+
+  #signin .signin-modal td:hover {
     cursor: pointer;
   }
 
-  td:hover > .icon {
+  #signin .signin-modal td:hover .icon {
     color: var(--theme-color);
+  }
+
+  #signin .sigin-modal .divider {
+    margin: 5px;
+  }
+
+  #signin .signin-checkbox {
+    display: none;
+    visibility: hidden;
+  }
+
+  #signin .signin-checkbox:checked ~ .signin-modal {
+    visibility: visible;
+    transform: scale(1);
   }
 </style>
 
-
+{% if type == "top_only" %}
 <div id="topheader" class="ui center aligned vertical segment">
-  <div class="ui container">
-    <div class="ui icon secondary menu">
-      <a class="logo item" href="#">
-        <i class="ui barcode icon"></i>
-      </a>
-
-      <div class="right menu">
-        <a class="item" href="#" data-inverted="" data-tooltip="" data-content="dashboard" data-variation="inverted">
-          <i class="material-icons">desktop_windows</i>
-        </a>
-        <a class="item" href="#" data-inverted="" data-tooltip="" data-content="publica" data-variation="inverted">
-          <i class="material-icons">cloud_queue</i>
-        </a>
-        <a class="item" href="#" data-inverted="" data-tooltip="" data-content="develop" data-variation="inverted">
-          <i class="material-icons">code</i>
-        </a>
-        <a class="item" href="#" data-inverted="" data-tooltip="" data-content="my" data-variation="inverted">
-          <i class="material-icons">child_care</i>
-        </a>
-      </div>
-    </div>
-  </div>
+  {% include "flowrence/header-menu.html" %}
 </div>
 
+
+{% elif type == "with_banner" %}
+<div id="topheader" class="hidden ui center aligned vertical segment">
+  {% include "flowrence/header-menu.html" %}
+</div>
 
 <div id="topbanner" class="ui center aligned vertical segment">
-  <div class="ui container">
-    <div class="ui icon secondary inverted menu">
-      <div class="right menu">
-        <a class="item" href="#" data-inverted="" data-tooltip="" data-content="dashboard" data-variation="inverted">
-          <i class="material-icons">desktop_windows</i>
-        </a>
-        <a class="item" href="#" data-inverted="" data-tooltip="" data-content="publica" data-variation="inverted">
-          <i class="material-icons">cloud_queue</i>
-        </a>
-        <a class="item" href="#" data-inverted="" data-tooltip="" data-content="develop" data-variation="inverted">
-          <i class="material-icons">code</i>
-        </a>
-        <a class="item" href="#" data-inverted="" data-tooltip="" data-content="my" data-variation="inverted">
-          <i class="material-icons">child_care</i>
-        </a>
-      </div>
-    </div>
-  </div>
+  {% include "flowrence/header-menu.html" with banner="true" %}
 </div>
-
 
 <div id="banner" class="ui center aligned vertical segment">
   <div class="ui container">
-    <div id="detector"></div>
+    <div class="detector"></div>
     <h1 class="ui icon inverted header">
       <i class="ui barcode icon"></i>
       <div class="content">
@@ -138,26 +178,47 @@
     </h1>
   </div>
 </div>
+{% endif %}
 
 
-<div id="signin" class="ui center aligned segment" style="background:white;position:absolute;left:100%;padding:30px 10px 20px 10px;box-shadow: 0 0 10px rgba(0,0,0,0.2);">
-  <div class="ui container" style="background:none;width:220px;padding:0;margin:0;">
-    <h3 class="ui icon header">
-      Sign in with
-    </h3>
+{% load socialaccount %}
+<div id="signin" class="ui vertical segment">
+  <div class="ui container">
 
-    <table class="ui unstackable collapsing celled table" style="background:none;border:none;">
-      <tbody style="">
-        <tr class="center aligned" style="background:none;">
-          <td style="border:none;"><i class="ui huge google icon" style="font-size:40px;background:none;"></i></td>
-          <td style="border:none;"><i class="ui huge facebook icon" style="font-size:40px;"></i></td>
-        </tr>
-        <tr class="center aligned" style="background:none;">
-          <td style="border:none;"><i class="ui huge github icon" style="font-size:40px;background:none;"></i></td>
-          <td style="border:none;"><i class="ui huge twitter icon" style="font-size:40px;"></i></td>
-        </tr>
-      </tbody>
-    </table>
+    <input class="signin-checkbox" type="checkbox">
 
+    <div class="signin-modal ui center aligned segment">
+      <div class="ui container">
+        <h3 class="ui icon header">
+          Sign in with
+        </h3>
+
+        <div class="ui divider"></div>
+
+        <table class="ui unstackable celled center aligned table">
+          <tbody>
+            <tr>
+              <td>
+                <a href="{% provider_login_url 'google' %}">
+                  <i class="ui huge google icon"></i>
+                </a>
+              </td>
+              <td>
+                <a href="{% provider_login_url 'facebook' method='oauth2' %}">
+                  <i class="ui huge facebook icon"></i>
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="ui huge github icon"></i></td>
+              <td><i class="ui huge twitter icon"></i></td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+      <div class="dismiss ui fluid black button">dismiss</div>
+    </div>
   </div>
 </div>

@@ -7,13 +7,13 @@ def intro(request):
     return render(request, 'flowrence/intro.html')
 
 def dashboard(request):
-    return HttpResponse('dashboard')
+    return render(request, 'flowrence/dashboard.html')
 
-def publica(request):
-    return HttpResponse('publica')
+def apphub(request):
+    return render(request, 'flowrence/apphub.html')
 
 def develop(request):
-    return HttpResponse('develop')
+    return render(request, 'flowrence/develop.html')
 
 def my(request):
-    return HttpResponse('my')
+    return render(request, 'flowrence/my.html')

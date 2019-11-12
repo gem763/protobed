@@ -1,0 +1,33 @@
+<div class="ui container">
+  <div class="ui icon secondary {% if banner %} inverted {% endif %} menu">
+
+    {% if not banner %}
+    <a class="logo item" href="{% url 'intro' %}">
+      <i class="ui barcode icon"></i>
+    </a>
+    {% endif %}
+
+    <div class="right menu">
+      <a class="dashboard item" href="{% url 'dashboard' %}" data-inverted="" data-tooltip="" data-content="dashboard" data-variation="inverted">
+        <i class="material-icons">desktop_windows</i>
+      </a>
+      <a class="apphub item" href="{% url 'apphub' %}" data-inverted="" data-tooltip="" data-content="apphub" data-variation="inverted">
+        <i class="material-icons">cloud_queue</i>
+      </a>
+      <a class="develop item" href="{% url 'develop' %}" data-inverted="" data-tooltip="" data-content="develop" data-variation="inverted">
+        <i class="material-icons">code</i>
+      </a>
+
+      {% if user.is_authenticated %}
+      <a class="my signed item" href="{% url 'my' %}" data-inverted="" data-tooltip="" data-content="{{ user }}" data-variation="inverted">
+        {% include "flowrence/avatar.html" %}
+      </a>
+
+      {% else %}
+      <a class="my signin item" data-inverted="" data-tooltip="" data-content="my" data-variation="inverted">
+        <i class="material-icons">child_care</i>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
