@@ -3,7 +3,12 @@
 
     {% if not banner %}
     <a class="logo item" href="{% url 'intro' %}">
-      <i class="ui barcode icon"></i>
+      <h2 class="ui header" >
+        <i class="ui barcode icon"></i>
+        <div class="content">
+          Flowrence
+        </div>
+      </h2>
     </a>
     {% endif %}
 
@@ -16,6 +21,7 @@
       </a>
       <a class="develop item" href="{% url 'develop' %}" data-inverted="" data-tooltip="" data-content="develop" data-variation="inverted">
         <i class="material-icons">code</i>
+        <!-- <i class="ui large code icon"></i> -->
       </a>
 
       {% if user.is_authenticated %}

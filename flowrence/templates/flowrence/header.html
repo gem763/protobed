@@ -12,7 +12,7 @@
 
   #topheader {
     background: white;
-    z-index: 2;
+    z-index: 100;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
   }
 
@@ -31,9 +31,17 @@
     padding: 0;
   }
 
+  #topheader .logo.item:hover {
+    opacity: 0.5;
+  }
+
   #topheader .logo.item .icon {
     font-size: 40px;
     color: var(--theme-color);
+  }
+
+  #topheader .logo.item .content {
+    font-family: 'Roboto Mono', monospace;
   }
 
   #banner {
@@ -123,9 +131,16 @@
 
   #signin .signin-modal td .icon {
     color: black;
-    font-size: 40px;
     background: none;
     margin: 0;
+  }
+
+  #signin .signin-modal td .brand.icon {
+    font-size: 40px;
+  }
+
+  #signin .signin-modal td .more.icon {
+    font-size: 30px;
   }
 
   #signin .signin-modal td:hover {
@@ -198,26 +213,21 @@
         <table class="ui unstackable celled center aligned table">
           <tbody>
             <tr>
-              <td>
-                <a href="{% provider_login_url 'google' %}">
-                  <i class="ui huge google icon"></i>
-                </a>
-              </td>
+              <td><i class="brand ui huge google icon"></i></td>
               <td>
                 <a href="{% provider_login_url 'facebook' method='oauth2' %}">
-                  <i class="ui huge facebook icon"></i>
+                  <i class="brand ui huge facebook icon"></i>
                 </a>
               </td>
             </tr>
             <tr>
-              <td><i class="ui huge github icon"></i></td>
-              <td><i class="ui huge twitter icon"></i></td>
+              <td><i class="brand ui huge twitter icon"></i></td>
+              <td><i class="more ui huge ellipsis horizontal icon"></i></td>
             </tr>
           </tbody>
         </table>
 
       </div>
-
       <div class="dismiss ui fluid black button">dismiss</div>
     </div>
   </div>

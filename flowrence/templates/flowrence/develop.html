@@ -3,18 +3,96 @@
 {% block css %}
   {{ block.super }}
   <style>
+  .CodeMirror {
+    /* border: 1px solid red; */
+    height: auto;
+    padding: 20px;
+    background: whitesmoke;
+    border-radius: 10px;
+  }
+
+  #run:hover {
+    background: orange;
+  }
+
+  #source:hover + #codecopy,
+  #codecopy:hover {
+    /* 아래 반드시 !important 필요 */
+    opacity: 1 !important;
+  }
   </style>
 {% endblock css %}
 
 
 {% block mastbody %}
-<div style="height:1000px;">
-DEVELOP
+<div class="ui center aligned vertical segment" style="background:none;border:none;">
+  <div class="ui text container" style="background:none">
+    <div id="datanavi" class="ui yellow button">open data navigator</div>
+    <div id="howto" class="ui black button">how-to</div>
+    <div id="ex" class="ui black button">examples</div>
+  </div>
+</div>
+
+
+<div class="ui center aligned vertical segment" style="background:none;height:1000px;border:none;padding-top:50px;">
+  <div class="ui text container" style="background:none;">
+    <div class="ui header" style="background:none;">
+      Python script
+    </div>
+
+    <div class="content" style="text-align:left;margin-bottom:10px;">
+      <form class="ui form" onsubmit="return false;" style="position:relative;">
+        <div class="ui field">
+          <!-- <div style="background:whitesmoke;padding:10px" id="source"> -->
+          <div style="background:none;padding:0" id="source">
+          </div>
+
+          <div class="ui icon button" style="position:absolute;top:20px;right:10px;z-index:10;background:none;opacity:0;" id="codecopy">
+            <i class="large clone outline icon"></i>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <br>
+  <div class="ui text container" style="background:none;">
+    <div class="ui header" style="background:none;">
+      Test
+    </div>
+
+    <div class="content" style="text-align:left;margin-bottom:10px;">
+      <form class="ui form" onsubmit="return false;" style="position:relative;">
+        <div class="ui field">
+          <div style="background:none;padding:0" id="test">
+          </div>
+
+          <div id="run" class="ui black button" style="position:absolute;bottom:10px;right:10px;z-index:2;">RUN</div>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock mastbody %}
 
 {% block js %}
   {{ block.super }}
   <script>
+    $("#source").empty();
+    var source_at = document.getElementById("source");
+    var source = CodeMirror(source_at, {
+      // value: "# import pandas as pd\n# import numpy as np\n# 그 밖에 (설치가 필요없는) 기본모듈을 import해서 쓰면 된다\n# 추가로 사용가능 함수: get_fisyear\n\ndef myModel(date, fin=None, mc=None, n=10):\n    # Type your code here\n    # fisyear = get_fisyear(date)\n    return position # pd.Series",
+      value: "import Crypto\n\n# Calculate gimchi spread using crypto data\ndef gimchi_spread(symbol, date):\n    symbol_usd = symbol + '/USD'\n    symbol_krw = symbol + '/KRW'\n    close_usd = Crypto.get_quotes(symbol_usd, date=date).close_price\n    close_krw = Crypto.get_quotes(symbol_krw, date=date).close_price\n    return close_krw - close_usd"
+      // autoRefresh: true
+    });
+    source.focus();
+    source.setCursor(source.lineCount(), 0);
+
+
+    $("#test").empty();
+    var test_at = document.getElementById("test");
+    var test = CodeMirror(test_at, {
+      value: "symbol = 'BTC'\ndate = '2019-09-30'\ngs = gimchi_spread(symbol, date); gs"
+    });
   </script>
 {% endblock js %}

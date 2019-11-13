@@ -3,13 +3,31 @@
 {% block css %}
   {{ block.super }}
   <style>
+    #addapp {
+      opacity: 0.2;
+      cursor: pointer;
+    }
+
+    #addapp:hover {
+      opacity: 1;
+    }
   </style>
 {% endblock css %}
 
 
 {% block mastbody %}
-<div style="height:1000px;">
-DASHBOARD
+<div class="ui center aligned vertical segment" style="background:none;border:none;height:1000px;">
+  <div class="ui container" style="background:none;padding-top:100px;">
+    <div id="addapp" style="display:inline-block;width:50%;height:200px;border-style:dashed;border-width:5px;position:relative;">
+      <div style="position:absolute;top:0;bottom:0;left:0;right:0;background:none;display:flex;align-items:center;justify-content:center;">
+        <div>
+          <div style="font-size:20px;">Add your first app here</div>
+          <i class="ui big plus icon" style="margin-top:20px;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </div>
 {% endblock mastbody %}
 
