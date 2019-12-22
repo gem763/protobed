@@ -1,0 +1,23 @@
+{% extends "florence/layout.html" %}
+
+{% block css %}
+  {{ block.super }}
+  <style>
+  </style>
+{% endblock css %}
+
+{% block mastheader %}
+{% include "florence/header.html" with type="with_banner" %}
+{% endblock mastheader %}
+
+{% block mastbody %}
+<div style="margin-top:-100px;height:1000px;">
+INTRO
+</div>
+{% endblock mastbody %}
+
+{% block js %}
+  {{ block.super }}
+  <script>
+  </script>
+{% endblock js %}

@@ -21,5 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('geenie/', include('geenie.urls')),
     path('data/', include('data.urls')),
-    path('flowrence/', include('flowrence.urls')),
+    path('florence/', include('florence.urls')),
 ]

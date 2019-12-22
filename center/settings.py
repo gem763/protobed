@@ -33,7 +33,7 @@ ALLOWED_HOSTS = ['*']
 # https://django-allauth.readthedocs.io/en/latest/installation.html#django
 # https://ldgeao99.tistory.com/117
 
-#2983148471713661:aa895db8d3c4425679b37b1f8ddbbc2bf
+#2441001172881339:43ff797cc44b1c76d53bbcfa63ba579cf
 #Q60jbPX1POJFmqb0dgGl:5RnWiWQnmln
 #1070422112021-th03c2jjibfvdmvt9ab5cbt0m8em0pjo.apps.googleusercontent.com:fbXaoEl90xvwaj4EI6m0bnZug
 
@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.facebook',
     'custom_user',
 
-    'flowrence',
+    'florence',
     'data',
 ]
 
@@ -86,7 +86,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 
-AUTH_USER_MODEL = 'flowrence.CustomEmailUser'
+AUTH_USER_MODEL = 'florence.CustomEmailUser'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', # Django 기본 유저모델
@@ -221,3 +221,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = 'static'
+
+MEDIA_URL = '/files/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')

@@ -1,0 +1,237 @@
+<style>
+  :root {
+    --theme-color: rgb(247,94,10);
+    /* rgb(237,149,119); */
+  }
+
+  #topheader, #topbanner {
+    position: fixed;
+    top: 0;
+    width: 100%;
+  }
+
+  #topheader {
+    background: white;
+    z-index: 100;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  }
+
+  #topheader.hidden {
+    display: none;
+  }
+
+  #topbanner {
+    background: none;
+    z-index: 1;
+    border: none
+  }
+
+  #topheader .logo.item {
+    background: none;
+    padding: 0;
+  }
+
+  #topheader .logo.item:hover {
+    opacity: 0.5;
+  }
+
+  #topheader .logo.item .icon {
+    font-size: 40px;
+    color: orange;
+    /* color: var(--theme-color); */
+    /* color: black; */
+  }
+
+  #topheader .logo.item .content {
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  #banner {
+    /* background: var(--theme-color); */
+    background: orange;
+    /* background: url('https://ak3.picdn.net/shutterstock/videos/6184913/thumb/1.jpg'); */
+    background-size: cover;
+    /* margin-top:70px; */
+    padding-top: 120px;
+    padding-bottom: 80px;
+  }
+
+  #banner .header {
+    background: none;
+    margin: 0;
+  }
+
+  #banner .header .icon {
+    background: none;
+    margin: 0;
+    font-size: 100px
+  }
+
+  #banner .header .content {
+    background: none;
+    font-size: 15vw;
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  #banner .header .sub.header {
+    font-size: 6vw;
+    margin-top: 6vw;
+  }
+
+  #signin {
+    background: none;
+    position: fixed;
+    top: 0;
+    width: 100%
+  }
+
+  #signin > .container {
+    background: none;
+    position: relative;
+  }
+
+  #signin .signin-modal {
+    transform: scale(0);
+    visibility: collapse;
+    background: white;
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    transition: all 0.1s ease;
+    transform-origin: top right;
+  }
+
+  #signin .signin-modal > .container {
+    width: 160px;
+    margin: 0 !important;
+  }
+
+  #signin .signin-modal > .container > h3.header {
+    margin: 10px;
+  }
+
+  #signin .signin-modal .dismiss {
+    margin-top: 10px;
+  }
+
+  #signin .signin-modal .dismiss:hover {
+    opacity: 0.5;
+  }
+
+  #signin .signin-modal table {
+    margin: 0;
+    background: none;
+    border: none;
+  }
+
+  #signin .signin-modal td {
+    width: 80px;
+    height: 80px;
+    border: none;
+  }
+
+  #signin .signin-modal td .icon {
+    color: black;
+    background: none;
+    margin: 0;
+  }
+
+  #signin .signin-modal td .brand.icon {
+    font-size: 40px;
+  }
+
+  #signin .signin-modal td .more.icon {
+    font-size: 30px;
+  }
+
+  #signin .signin-modal td:hover {
+    cursor: pointer;
+  }
+
+  #signin .signin-modal td:hover .icon {
+    color: var(--theme-color);
+  }
+
+  #signin .sigin-modal .divider {
+    margin: 5px;
+  }
+
+  #signin .signin-checkbox {
+    display: none;
+    visibility: hidden;
+  }
+
+  #signin .signin-checkbox:checked ~ .signin-modal {
+    visibility: visible;
+    transform: scale(1);
+  }
+</style>
+
+{% if type == "top_only" %}
+<div id="topheader" class="ui center aligned vertical segment">
+  {% include "florence/header-menu.html" %}
+</div>
+
+
+{% elif type == "with_banner" %}
+<div id="topheader" class="hidden ui center aligned vertical segment">
+  {% include "florence/header-menu.html" %}
+</div>
+
+<div id="topbanner" class="ui center aligned vertical segment">
+  {% include "florence/header-menu.html" with banner="true" %}
+</div>
+
+<div id="banner" class="ui center aligned vertical segment">
+  <div class="ui container">
+    <div class="detector"></div>
+    <h1 class="ui icon inverted header">
+      <i class="ui barcode icon"></i>
+      <div class="content">
+        Florence
+        <div class="sub header">Where living data stays</div>
+      </div>
+    </h1>
+  </div>
+</div>
+{% endif %}
+
+
+{% load socialaccount %}
+<div id="signin" class="ui vertical segment">
+  <div class="ui container">
+
+    <input class="signin-checkbox" type="checkbox">
+
+    <div class="signin-modal ui center aligned segment">
+      <div class="ui container">
+        <h3 class="ui icon header">
+          Sign in with
+        </h3>
+
+        <div class="ui divider"></div>
+
+        <table class="ui unstackable celled center aligned table">
+          <tbody>
+            <tr>
+              <td><i class="brand ui huge google icon"></i></td>
+              <td>
+                <a href="{% provider_login_url 'facebook' method='oauth2' %}">
+                  <i class="brand ui huge facebook icon"></i>
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="brand ui huge twitter icon"></i></td>
+              <td><i class="more ui huge ellipsis horizontal icon"></i></td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+      <div class="dismiss ui fluid black button">dismiss</div>
+    </div>
+  </div>
+</div>

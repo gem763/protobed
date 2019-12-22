@@ -1,0 +1,64 @@
+{% extends "florence/layout.html" %}
+
+{% block css %}
+  {{ block.super }}
+  <style>
+    .codebox {
+      width: 100%;
+      background: whitesmoke;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    #jsmodule {
+      min-height: 100px;
+      background: whitesmoke;
+    }
+
+    .ace_mobile-menu {
+      display: none !important;
+    }
+  </style>
+{% endblock css %}
+
+
+{% block mastbody %}
+<div class="ui center aligned vertical segment" style="background:none;">
+  <div class="ui text container">
+
+    Code
+    <div class='codebox'>
+      <div id="jsmodule">function foo(items) {
+  var x = "All this is syntax highlighted";
+  return x;
+}</div>
+    </div>
+
+  </div>
+</div>
+{% endblock mastbody %}
+
+{% block js %}
+  {{ block.super }}
+  <script>
+    var jsmodule = ace.edit("jsmodule");
+    jsmodule.setOptions({
+			maxLines: Infinity, // 줄 전체를 표시
+			highlightActiveLine: true, // 현재 행에 하이라이트 표시
+			theme: 'ace/theme/chrome', // 표시 테마
+      showGutter: false,
+      readOnly: false,
+      mode: "ace/mode/javascript"
+		})
+    jsmodule.commands.addCommand({
+      name: "showKeyboardShortcuts",
+      bindKey: {win: "Ctrl-Alt-h", mac: "Command-Alt-h"},
+      exec: function(editor) {
+              ace.config.loadModule("ace/ext/keybinding_menu", function(module) {
+                  module.init(editor);
+                  editor.showKeyboardShortcuts()
+              });
+            }
+    })
+  </script>
+{% endblock js %}
