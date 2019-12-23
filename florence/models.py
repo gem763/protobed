@@ -12,25 +12,41 @@ class BigIdAbstract(models.Model):
 
 
 class CustomEmailUser(AbstractEmailUser, BigIdAbstract):
-    pass
+    def save(self, *args, **kwargs):
+        created = not self.pk
+        super().save(*args, **kwargs)
+        if created:
+            Profile.objects.create(name=self.email, user=self)
 
 
 class Profile(BigIdAbstract):
     user = models.OneToOneField(CustomEmailUser, on_delete=models.CASCADE)
     credit = models.IntegerField(default=0)
 
+    def __str__(self):
+        return self.user.email
+
     # def natural_key(self):
     #     return {'id':self.pk, 'image':self.user.socialaccount_set.all()[0].get_avatar_url(), 'email':self.user.email}
 
 
-class ModuleDefault(BigIdAbstract):
+class Module(BigIdAbstract):
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
     credit = models.IntegerField(default=0)
     nlike = models.IntegerField(default=0)
-    code = models.TextField(null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length=200, blank=True, null=True)
-    
+    name = models.CharField(max_length=200, blank=False, null=False)
+    description = models.TextField(null=True, blank=True)
+    keywords = models.TextField(max_length=500, null=True, blank=True)
+    published = models.BooleanField(default=False)
+    code = models.TextField(null=False, blank=False)
+    imports = models.TextField(max_length=500, null=True, blank=True)
 
-    class Meta:
-        abstract = True
+    def __str__(self):
+        disp = self.name + ' | ' + self.author.user.email
+
+        if self.published:
+            return '[published] ' + disp
+
+        else:
+            return disp

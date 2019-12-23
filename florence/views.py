@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from florence.models import Module
 
 # Create your views here.
 
@@ -17,3 +18,7 @@ def develop(request):
 
 def my(request):
     return render(request, 'florence/my.html')
+
+def getcode(request):
+    code = Module.objects.get(name='AlphaVantageStockDataSourcer').code
+    return JsonResponse({'code':code}, safe=False)
