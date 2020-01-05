@@ -12,7 +12,7 @@
 
     #jsmodule {
       min-height: 100px;
-      background: whitesmoke;
+      background: none;
     }
 
     .ace_mobile-menu {
@@ -27,46 +27,64 @@
   <div class="ui text container">
 
     Code
-    <div class='codebox'>
-      <div id="jsmodule">function foo(items) {
+    <div id='codebox'>
+      <!-- <div id="jsmodule">function foo(items) {
   var x = "All this is syntax highlighted";
   return x;
-}</div>
+}</div> -->
     </div>
 
     <br>
     <button id="testify1" class="ui black button">Editor TEST</button>
     <button id="testify2" class="ui black button">DB TEST</button>
+
+    <!-- <div id="my-element"></div> -->
   </div>
 </div>
 {% endblock mastbody %}
 
 {% block js %}
   {{ block.super }}
+  <script src="https://embed.runkit.com"></script>
+
   <script>
-    var jsmodule = ace.edit("jsmodule");
-    jsmodule.setOptions({
-			maxLines: Infinity, // 줄 전체를 표시
-			highlightActiveLine: true, // 현재 행에 하이라이트 표시
-			theme: 'ace/theme/chrome', // 표시 테마
-      showGutter: false,
-      readOnly: false,
-      mode: "ace/mode/javascript"
-		})
-    jsmodule.commands.addCommand({
-      name: "showKeyboardShortcuts",
-      bindKey: {win: "Ctrl-Alt-h", mac: "Command-Alt-h"},
-      exec: function(editor) {
-              ace.config.loadModule("ace/ext/keybinding_menu", function(module) {
-                  module.init(editor);
-                  editor.showKeyboardShortcuts()
-              });
-            }
-    })
+    var notebook = RunKit.createNotebook({
+      // the parent element for the new notebook
+      element: document.getElementById("codebox"),
+      // specify the source of the notebook
+      source: "// GeoJSON!\nvar getJSON = require(\"async-get-json\");\n\nawait getJSON(\"https://storage.googleapis.com/maps-devrel/google.json\");"
+    });
+
+
+    // let jsmodule = ace.edit("jsmodule");
+    //
+    // jsmodule.setOptions({
+		// 	maxLines: Infinity,        // 줄 전체를 표시
+		// 	highlightActiveLine: true, // 현재 행에 하이라이트 표시
+		// 	theme: 'ace/theme/chrome', // 표시 테마
+    //   showGutter: false,
+    //   readOnly: false,
+    //   mode: "ace/mode/javascript"
+		// })
+    //
+    // jsmodule.commands.addCommand({
+    //   name: "showKeyboardShortcuts",
+    //   bindKey: {win: "Ctrl-Alt-h", mac: "Command-Alt-h"},
+    //   exec: function(editor) {
+    //           ace.config.loadModule("ace/ext/keybinding_menu", function(module) {
+    //               module.init(editor);
+    //               editor.showKeyboardShortcuts()
+    //           });
+    //         }
+    // })
 
     $('#testify1').click(function() {
-      const moduleset = { code: jsmodule.getValue() };
-      testify(moduleset);
+      // const moduleset = { code: jsmodule.getValue() };
+      // testify(moduleset);
+      notebook.getSource(function(code) {
+        const moduleset = { code: code };
+        testify(moduleset);
+      });
     });
 
 
@@ -88,13 +106,19 @@
 
     // 코드를 모듈로 만들기
     function modulize(moduleset) {
-      let export_key = /class (\w+) /.exec(moduleset.code)[1];
+      // let export_key = /class (\w+) /.exec(moduleset.code)[1];
       let modulized;
 
       if (moduleset.imports==undefined) {
+        // modulized = `define(function(){
+        //   return {
+        //     ${export_key}: ${moduleset.code}
+        //   }
+        // })`;
+
         modulized = `define(function(){
           return {
-            ${export_key}: ${moduleset.code}
+            export: ${moduleset.code}
           }
         })`;
 

@@ -86,7 +86,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 
-AUTH_USER_MODEL = 'florence.CustomEmailUser'
+AUTH_USER_MODEL = 'florence.User'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend', # Django 기본 유저모델
