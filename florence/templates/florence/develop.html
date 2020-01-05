@@ -27,6 +27,9 @@
   <div class="ui text container">
 
     Code
+    <div id='endpoint'>
+    </div>
+
     <div id='codebox'>
       <!-- <div id="jsmodule">function foo(items) {
   var x = "All this is syntax highlighted";
@@ -55,6 +58,13 @@
       source: "// GeoJSON!\nvar getJSON = require(\"async-get-json\");\n\nawait getJSON(\"https://storage.googleapis.com/maps-devrel/google.json\");"
     });
 
+    var endpoint = RunKit.createNotebook({
+      // the parent element for the new notebook
+      element: document.getElementById("endpoint"),
+      // specify the source of the notebook
+      source: "",
+      // mode: 'endpoint'
+    });
 
     // let jsmodule = ace.edit("jsmodule");
     //
@@ -106,21 +116,21 @@
 
     // 코드를 모듈로 만들기
     function modulize(moduleset) {
-      // let export_key = /class (\w+) /.exec(moduleset.code)[1];
+      let export_key = /class (\w+) /.exec(moduleset.code)[1];
       let modulized;
 
       if (moduleset.imports==undefined) {
-        // modulized = `define(function(){
-        //   return {
-        //     ${export_key}: ${moduleset.code}
-        //   }
-        // })`;
-
         modulized = `define(function(){
           return {
-            export: ${moduleset.code}
+            ${export_key}: ${moduleset.code}
           }
         })`;
+
+        // modulized = `define(function(){
+        //   return {
+        //     export: ${moduleset.code}
+        //   }
+        // })`;
 
       } else {
         let _imports = math.transpose(Object.entries(moduleset.imports));
