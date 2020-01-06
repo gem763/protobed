@@ -10,8 +10,13 @@
       border-radius: 10px;
     }
 
-    #jsmodule {
+    #editor-module {
       min-height: 100px;
+      background: none;
+    }
+
+    #editor-test {
+      min-height: 50px;
       background: none;
     }
 
@@ -23,154 +28,183 @@
 
 
 {% block mastbody %}
-<div class="ui center aligned vertical segment" style="background:none;">
-  <div class="ui text container">
-
-    Code
-    <div id='endpoint'>
+<div class="ui center aligned vertical segment" style="background:none;border:none;height:100px;">
+  <div class='ui text container' style='text-align:left;'>
+    {% for module in user.module_set.all %}
+    <div onclick='load_module({{module.pk}})'>
+      {{ module.name }}
     </div>
+    {% endfor %}
+  </div>
+</div>
 
-    <div id='codebox'>
-      <!-- <div id="jsmodule">function foo(items) {
+<div class="ui center aligned vertical segment" style="background:none;border:none;">
+  <div class="ui text container">
+    <div class='ui header'>Code</div>
+    <div class='codebox'>
+      <div id="editor-module">function foo(items) {
   var x = "All this is syntax highlighted";
   return x;
-}</div> -->
+}</div>
     </div>
+  </div>
+</div>
 
-    <br>
-    <button id="testify1" class="ui black button">Editor TEST</button>
-    <button id="testify2" class="ui black button">DB TEST</button>
+<div class="ui center aligned vertical segment" style="background:none;border:none;">
+  <div class="ui text container">
+    <div class='ui header'>Tester</div>
+    <div class='codebox'>
+      <div id="editor-test"></div>
+    </div>
+  </div>
+</div>
 
-    <!-- <div id="my-element"></div> -->
+<div class="ui center aligned vertical segment" style="background:none;">
+  <div class="ui text container">
+    <button id="modulizer" class="ui black button">modulize</button>
+    <button id="tester" class="ui black button">test</button>
   </div>
 </div>
 {% endblock mastbody %}
 
 {% block js %}
   {{ block.super }}
-  <script src="https://embed.runkit.com"></script>
-
   <script>
-    var notebook = RunKit.createNotebook({
-      // the parent element for the new notebook
-      element: document.getElementById("codebox"),
-      // specify the source of the notebook
-      source: "// GeoJSON!\nvar getJSON = require(\"async-get-json\");\n\nawait getJSON(\"https://storage.googleapis.com/maps-devrel/google.json\");"
-    });
+    let editor_module = init_editor('editor-module');
+    let editor_test = init_editor('editor-test');
 
-    var endpoint = RunKit.createNotebook({
-      // the parent element for the new notebook
-      element: document.getElementById("endpoint"),
-      // specify the source of the notebook
-      source: "",
-      // mode: 'endpoint'
-    });
+    function init_editor(editor_id) {
+      let editor = ace.edit(editor_id);
 
-    // let jsmodule = ace.edit("jsmodule");
-    //
-    // jsmodule.setOptions({
-		// 	maxLines: Infinity,        // 줄 전체를 표시
-		// 	highlightActiveLine: true, // 현재 행에 하이라이트 표시
-		// 	theme: 'ace/theme/chrome', // 표시 테마
-    //   showGutter: false,
-    //   readOnly: false,
-    //   mode: "ace/mode/javascript"
-		// })
-    //
-    // jsmodule.commands.addCommand({
-    //   name: "showKeyboardShortcuts",
-    //   bindKey: {win: "Ctrl-Alt-h", mac: "Command-Alt-h"},
-    //   exec: function(editor) {
-    //           ace.config.loadModule("ace/ext/keybinding_menu", function(module) {
-    //               module.init(editor);
-    //               editor.showKeyboardShortcuts()
-    //           });
-    //         }
-    // })
+      editor.setOptions({
+  			maxLines: Infinity,        // 줄 전체를 표시
+  			highlightActiveLine: true, // 현재 행에 하이라이트 표시
+  			theme: 'ace/theme/chrome', // 표시 테마
+        showGutter: false,
+        readOnly: false,
+        mode: "ace/mode/javascript"
+  		})
 
-    $('#testify1').click(function() {
-      // const moduleset = { code: jsmodule.getValue() };
-      // testify(moduleset);
-      notebook.getSource(function(code) {
-        const moduleset = { code: code };
-        testify(moduleset);
-      });
+      editor.commands.addCommand({
+        name: "showKeyboardShortcuts",
+        bindKey: {win: "Ctrl-Alt-h", mac: "Command-Alt-h"},
+        exec: function(editor) {
+                ace.config.loadModule("ace/ext/keybinding_menu", function(module) {
+                    module.init(editor);
+                    editor.showKeyboardShortcuts()
+                });
+              }
+      })
+      return editor
+    }
+
+    $('#modulizer').click(function() {
+      console.log(modulize(editor_module.getValue()));
     });
 
 
-    $('#testify2').click(function() {
-      $.ajax({
-        url: '{% url "getcode" %}',
-        type: 'GET',
-        data: {},
-        dataType:'json',
-        cache: false,
-        contentType: false,
-        processData: false,
-        success: function(json) {
-          const moduleset = { code: json.code };
-          testify(moduleset);
-        }
-      });
-    });
+    $('#tester').click(function() {
+      testify();
+    })
 
-    // 코드를 모듈로 만들기
-    function modulize(moduleset) {
-      let export_key = /class (\w+) /.exec(moduleset.code)[1];
-      let modulized;
+    // $('#testify2').click(function() {
+    //   $.ajax({
+    //     url: '{% url "module" 1 %}',
+    //     type: 'GET',
+    //     data: {},
+    //     dataType:'json',
+    //     cache: false,
+    //     contentType: false,
+    //     processData: false,
+    //     success: function(json) {
+    //       const moduleset = { code: json.code };
+    //       testify(moduleset);
+    //     }
+    //   });
+    // });
 
-      if (moduleset.imports==undefined) {
-        modulized = `define(function(){
-          return {
-            ${export_key}: ${moduleset.code}
-          }
-        })`;
-
-        // modulized = `define(function(){
-        //   return {
-        //     export: ${moduleset.code}
-        //   }
-        // })`;
-
-      } else {
-        let _imports = math.transpose(Object.entries(moduleset.imports));
-        let _modulized = _imports[1].map(_moduleset => modulize(_moduleset));
-
-        modulized = `define(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
-          return {
-            ${export_key}: ${moduleset.code}
-          }
-        })`
-      }
-
-      let blob = new Blob([modulized], {type: 'text/javascript'});
+    function modulize(code) {
+      let blob = new Blob([code], {type: 'text/javascript'});
       return URL.createObjectURL(blob);
     }
 
 
+    function testify() {
+      let test_code = editor_module.getValue() + '\n' + editor_test.getValue();
+      let blob = new Blob([test_code], {type: 'text/javascript'});
+      let js = URL.createObjectURL(blob);
 
-    // 코드 테스트하기
-    function testify(moduleset) {
-      let mymodule = modulize(moduleset); console.log(mymodule);
-      let export_key = /class (\w+) /.exec(moduleset.code)[1];
-      let target;
-
-      requirejs([mymodule], function(mod) {
-        target = mod[export_key];
-
-        let params = {
-          apikey: '2JOML1ZPSME2Q28A',
-          sym: 'aapl',
-          interval: 'daily',
-          nbar:5
-        };
-
-        let mysrc = new target();
-        mysrc.get(params).then(function(output) {
-          console.log(output);
-        });
-      })
+      import(js).then(testjs => {
+        console.log('tested');
+      });
     }
 
+    // 코드를 모듈로 만들기
+    // function modulize(moduleset) {
+    //   let export_key = /class (\w+) /.exec(moduleset.code)[1];
+    //   let modulized;
+    //
+    //   if (moduleset.imports==undefined) {
+    //     modulized = `define(function(){
+    //       return {
+    //         ${export_key}: ${moduleset.code}
+    //       }
+    //     })`;
+    //
+    //   } else {
+    //     let _imports = math.transpose(Object.entries(moduleset.imports));
+    //     let _modulized = _imports[1].map(_moduleset => modulize(_moduleset));
+    //
+    //     modulized = `define(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
+    //       return {
+    //         ${export_key}: ${moduleset.code}
+    //       }
+    //     })`
+    //   }
+    //
+    //   let blob = new Blob([modulized], {type: 'text/javascript'});
+    //   return URL.createObjectURL(blob);
+    // }
+    //
+    //
+    //
+    // // 코드 테스트하기
+    // function testify(moduleset) {
+    //   let mymodule = modulize(moduleset); console.log(mymodule);
+    //   let export_key = /class (\w+) /.exec(moduleset.code)[1];
+    //   let target;
+    //
+    //   requirejs([mymodule], function(mod) {
+    //     target = mod[export_key];
+    //
+    //     let params = {
+    //       apikey: '2JOML1ZPSME2Q28A',
+    //       sym: 'aapl',
+    //       interval: 'daily',
+    //       nbar:5
+    //     };
+    //
+    //     let mysrc = new target();
+    //     mysrc.get(params).then(function(output) {
+    //       console.log(output);
+    //     });
+    //   })
+    // }
+
+
+    function load_module(module_pk) {
+      $.ajax({
+        url: '/florence/module/' + module_pk,
+        type: 'GET',
+        // data: {},
+        dataType:'json',
+        cache: false,
+        // contentType: false,
+        // processData: false,
+        success: function(json) {
+          editor_module.setValue(json.code, -1);
+        }
+      });
+    }
   </script>
 {% endblock js %}

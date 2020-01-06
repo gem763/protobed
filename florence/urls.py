@@ -10,5 +10,5 @@ urlpatterns = [
     path('develop/', v.develop, name='develop'),
     path('my/', v.my, name='my'),
 
-    path('getcode/', v.getcode, name='getcode'),
+    path('module/<int:pk>/', v.module, name='module'),
 ]

@@ -28,7 +28,7 @@ class Module(BigIdAbstract):
     keywords = models.TextField(max_length=500, null=True, blank=True)
     published = models.BooleanField(default=False)
     code = models.TextField(null=False, blank=False)
-    imports = models.TextField(max_length=500, null=True, blank=True)
+    # imports = models.TextField(max_length=500, null=True, blank=True)
 
     def __str__(self):
         disp = self.name + ' | ' + self.author.email
