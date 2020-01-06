@@ -124,6 +124,19 @@
     // });
 
     function modulize(code) {
+      const matches = code.matchAll(/from\s+\'(\#f\:\S+)\'/g);
+      var extracted;
+      var user;
+      var modulename;
+      for (const match of matches) {
+        extracted = match[1].split(':');
+        user = extracted[1];
+        mname = extracted[2];
+        console.log(user);
+        console.log(mname);
+      }
+
+      let ext_modules = /from (\w+) /.exec(code);
       let blob = new Blob([code], {type: 'text/javascript'});
       return URL.createObjectURL(blob);
     }
