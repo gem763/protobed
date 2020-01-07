@@ -8,7 +8,7 @@ urlpatterns = [
     path('dashboard/', v.dashboard, name='dashboard'),
     path('miniapps/', v.miniapps, name='miniapps'),
     path('develop/', v.develop, name='develop'),
-    path('my/', v.my, name='my'),
+    path('develop/getcode/', v.getcode, name='getcode'),
 
-    path('module/<int:pk>/', v.module, name='module'),
+    path('my/', v.my, name='my'),
 ]

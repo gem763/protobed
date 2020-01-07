@@ -19,6 +19,16 @@ def develop(request):
 def my(request):
     return render(request, 'florence/my.html')
 
-def module(request, pk):
-    code = Module.objects.get(pk=pk).code
-    return JsonResponse({'code':code}, safe=False)
+def getcode(request):
+    modulekey = request.GET.get('modulekey', None)
+
+    try:
+        _modulekey = modulekey.split(':')
+        user_email = _modulekey[1]
+        module_name = _modulekey[2]
+        print(user_email, module_name)
+        module = Module.objects.get(author__email=user_email, name=module_name)
+        return JsonResponse({'success':True, 'code':module.code}, safe=False)
+
+    except:
+        return JsonResponse({'success':False}, safe=False)

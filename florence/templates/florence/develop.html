@@ -31,7 +31,8 @@
 <div class="ui center aligned vertical segment" style="background:none;border:none;height:100px;">
   <div class='ui text container' style='text-align:left;'>
     {% for module in user.module_set.all %}
-    <div onclick='load_module({{module.pk}})'>
+    <!-- <div code='{{module.code}}' onclick='load_module({{module.pk}})'> -->
+    <div class='mymodule' code='{{module.code}}'>
       {{ module.name }}
     </div>
     {% endfor %}
@@ -54,15 +55,28 @@
   <div class="ui text container">
     <div class='ui header'>Tester</div>
     <div class='codebox'>
-      <div id="editor-test"></div>
+      <div id="editor-test">const stocks = new AlphaVantageStockDataSourcer();
+const params = {
+  apikey: '2JOML1ZPSME2Q28A',
+  symbol: 'aapl'
+};
+
+stocks.get(params);</div>
     </div>
   </div>
 </div>
 
-<div class="ui center aligned vertical segment" style="background:none;">
+<div class="ui center aligned vertical segment" style="background:none;border:none;">
   <div class="ui text container">
     <button id="modulizer" class="ui black button">modulize</button>
     <button id="tester" class="ui black button">test</button>
+  </div>
+</div>
+
+<div class="ui center aligned vertical segment" style="background:none;border:none;">
+  <div class="ui text container">
+    <div id='result' class='codebox' style='text-align:left;font-size:12px;'>
+    </div>
   </div>
 </div>
 {% endblock mastbody %}
@@ -70,6 +84,21 @@
 {% block js %}
   {{ block.super }}
   <script>
+    console.log = (function (old_function, div_log) {
+        return function (text) {
+            old_function(text);
+
+            // if (typeof text === 'object') {
+              jsonView.format(JSON.stringify(text), div_log);
+            // } else {
+              // jsonView.format(text, div_log);
+            // }
+
+        };
+    } (console.log.bind(console), '#result'));
+
+
+
     let editor_module = init_editor('editor-module');
     let editor_test = init_editor('editor-test');
 
@@ -99,17 +128,25 @@
     }
 
     $('#modulizer').click(function() {
-      console.log(modulize(editor_module.getValue()));
+      let code = editor_module.getValue();
+
+      (async () => {
+        console.log(await modulize(code));
+      })()
+
+      // let modulized = modulize(code);
+      // console.log(modulized);
     });
 
 
     $('#tester').click(function() {
-      testify();
+      (async () => {
+        await testify();
+      })()
     })
 
     // $('#testify2').click(function() {
     //   $.ajax({
-    //     url: '{% url "module" 1 %}',
     //     type: 'GET',
     //     data: {},
     //     dataType:'json',
@@ -123,32 +160,50 @@
     //   });
     // });
 
-    function modulize(code) {
-      const matches = code.matchAll(/from\s+\'(\#f\:\S+)\'/g);
-      var extracted;
-      var user;
-      var modulename;
+
+    async function getcode(modulekey) {
+      return $.ajax({
+        type: 'GET',
+        data: { modulekey: modulekey },
+        url: '{% url "getcode" %}',
+        dataType:'json',
+        cache: false
+      }).then(resp => resp.code);
+    }
+
+    async function modulize(code) {
+      const regex_match = code.matchAll(/from\s+\'(\#f\:\S+)\'/g);
+      const matches = Array.from(regex_match, function(item) { return item[1] });
+      const promises = []
       for (const match of matches) {
-        extracted = match[1].split(':');
-        user = extracted[1];
-        mname = extracted[2];
-        console.log(user);
-        console.log(mname);
+        promises.push(getcode(match));
       }
 
-      let ext_modules = /from (\w+) /.exec(code);
-      let blob = new Blob([code], {type: 'text/javascript'});
-      return URL.createObjectURL(blob);
+      const ext_codes = await Promise.all(promises);
+
+      var blob, jsfile, subcode_modulized;
+      for (const item of _.zip(matches, ext_codes)) {
+        subcode_modulized = await modulize(item[1]);
+        blob = new Blob([subcode_modulized], {type: 'text/javascript'});
+        jsfile = URL.createObjectURL(blob);
+        code = code.replace(item[0], jsfile);
+      }
+
+      return code
     }
 
 
-    function testify() {
-      let test_code = editor_module.getValue() + '\n' + editor_test.getValue();
+    async function testify() {
+      $('#result').html('');
+
+      const modulized = await modulize(editor_module.getValue());
+      let test_code = modulized + '\n' + editor_test.getValue();
       let blob = new Blob([test_code], {type: 'text/javascript'});
       let js = URL.createObjectURL(blob);
 
       import(js).then(testjs => {
-        console.log('tested');
+        // console.log('tested');
+        // jsonView.format(data, '#result');
       });
     }
 
@@ -205,19 +260,33 @@
     // }
 
 
-    function load_module(module_pk) {
-      $.ajax({
-        url: '/florence/module/' + module_pk,
-        type: 'GET',
-        // data: {},
-        dataType:'json',
-        cache: false,
-        // contentType: false,
-        // processData: false,
-        success: function(json) {
-          editor_module.setValue(json.code, -1);
-        }
-      });
-    }
+    // function load_module(module_pk) {
+    //   $.ajax({
+    //     type: 'GET',
+    //     // data: {},
+    //     dataType:'json',
+    //     cache: false,
+    //     // contentType: false,
+    //     // processData: false,
+    //     success: function(json) {
+    //       editor_module.setValue(json.code, -1);
+    //     }
+    //   });
+    // }
+
+    $('.mymodule').click(function() {
+      let code = $(this).attr('code');
+      editor_module.setValue(code, -1);
+    });
+
+
+
+    // let data = {
+    //   'first': 'name',
+    //   'last': 'test',
+    //   'what': ['1', '2']
+    // };
+    //
+    // jsonView.format(data, '#result');
   </script>
 {% endblock js %}
