@@ -9,6 +9,7 @@ urlpatterns = [
     path('miniapps/', v.miniapps, name='miniapps'),
     path('develop/', v.develop, name='develop'),
     path('develop/getcode/', v.getcode, name='getcode'),
+    path('module/<int:pk>/tree/', v.moduletree, name='moduletree'), 
 
     path('my/', v.my, name='my'),
 ]

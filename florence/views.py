@@ -32,3 +32,24 @@ def getcode(request):
 
     except:
         return JsonResponse({'success':False}, safe=False)
+
+
+def treefy(mod):
+    imports = {}
+    for imp in mod.import_set.all():
+        if imp.typeof=='moduleimport':
+            imports[imp.alias] = treefy(imp.moduleimport.module)
+        elif imp.typeof=='urlimport':
+            imports[imp.alias] = imp.urlimport.url
+
+    return {
+        'imports': imports,
+        'code': mod.code,
+        'exports': [exp.strip() for exp in mod.exports.split(',')]
+    }
+
+
+def moduletree(requeset, pk):
+    mod = Module.objects.get(pk=pk)
+    # print(treefy(mod))
+    return JsonResponse({'success':True, 'tree':treefy(mod)}, safe=False)

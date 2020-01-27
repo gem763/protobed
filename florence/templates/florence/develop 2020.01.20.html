@@ -31,6 +31,7 @@
 <div class="ui center aligned vertical segment" style="background:none;border:none;height:100px;">
   <div class='ui text container' style='text-align:left;'>
     {% for module in user.module_set.all %}
+    <!-- <div code='{{module.code}}' onclick='load_module({{module.pk}})'> -->
     <div class='mymodule' code='{{module.code}}'>
       {{ module.name }}
     </div>
@@ -60,8 +61,7 @@ const params = {
   symbol: 'aapl'
 };
 
-stocks.get_test(params);
-https://stackoverflow.com/questions/43796705/how-to-include-cdn-in-javascript-file-js</div>
+stocks.get(params);</div>
     </div>
   </div>
 </div>
@@ -84,18 +84,18 @@ https://stackoverflow.com/questions/43796705/how-to-include-cdn-in-javascript-fi
 {% block js %}
   {{ block.super }}
   <script>
-    // console.log = (function (old_function, div_log) {
-    //     return function (text) {
-    //         old_function(text);
-    //
-    //         // if (typeof text === 'object') {
-    //         //   jsonView.format(text, div_log);
-    //         // } else {
-    //         //   jsonView.format(JSON.stringify(text), div_log);
-    //         // }
-    //         jsonView.format({'result':text}, div_log)
-    //     };
-    // } (console.log.bind(console), '#result'));
+    console.log = (function (old_function, div_log) {
+        return function (text) {
+            old_function(text);
+
+            // if (typeof text === 'object') {
+              jsonView.format(JSON.stringify(text), div_log);
+            // } else {
+              // jsonView.format(text, div_log);
+            // }
+
+        };
+    } (console.log.bind(console), '#result'));
 
 
 
@@ -128,72 +128,38 @@ https://stackoverflow.com/questions/43796705/how-to-include-cdn-in-javascript-fi
     }
 
     $('#modulizer').click(function() {
-      moduletree();
-      // let code = editor_module.getValue();
-      //
-      // (async () => {
-      //   console.log(await modulize(code));
-      // })();
+      let code = editor_module.getValue();
+
+      (async () => {
+        console.log(await modulize(code));
+      })()
+
+      // let modulized = modulize(code);
+      // console.log(modulized);
     });
 
 
     $('#tester').click(function() {
       (async () => {
         await testify();
-      })();
+      })()
     })
 
+    // $('#testify2').click(function() {
+    //   $.ajax({
+    //     type: 'GET',
+    //     data: {},
+    //     dataType:'json',
+    //     cache: false,
+    //     contentType: false,
+    //     processData: false,
+    //     success: function(json) {
+    //       const moduleset = { code: json.code };
+    //       testify(moduleset);
+    //     }
+    //   });
+    // });
 
-    function moduletree() {
-      var spinner = new Spinner().spin(document.body);
-
-      $.ajax({
-        type: 'GET',
-        url: '{% url "moduletree" 4 %}',
-        dataType:'json',
-        cache: false,
-        success: function(resp) {
-          let mod = modulize2(resp.tree);
-          console.log(mod);
-        },
-        error: function(xhr, errmsg, err) {
-          console.log(xhr.status + ': ' + xhr.responseText);
-        },
-        complete: function() {
-          spinner.stop();
-        }
-      });
-    }
-
-
-    function modulize2(moduletree) {
-      // console.log(moduletree.exports);
-      // let export_key = /class (\w+) /.exec(moduleset.code)[1];
-      let modulized;
-      //
-      if (moduletree.imports.length==0) {
-        modulized = `define(function(){
-          ${moduletree.code}
-          return {
-            ${moduletree.exports[0]}: ${moduletree.exports[0]}
-          }
-        })`;
-
-      } else {
-        let _imports = math.transpose(Object.entries(moduletree.imports));
-        // console.log(_imports);
-        let _modulized = _imports[1].map(_moduletree => modulize2(_moduletree));
-        //
-        modulized = `define(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
-          return {
-            ${moduletree.exports[0]}: ${moduletree.exports[0]}
-          }
-        })`
-      }
-
-      let blob = new Blob([modulized], {type: 'text/javascript'});
-      return URL.createObjectURL(blob);
-    }
 
     async function getcode(modulekey) {
       return $.ajax({
@@ -230,21 +196,97 @@ https://stackoverflow.com/questions/43796705/how-to-include-cdn-in-javascript-fi
     async function testify() {
       $('#result').html('');
 
-      const modulized = await modulize(editor_module.getValue());console.log(modulized)
+      const modulized = await modulize(editor_module.getValue());
       let test_code = modulized + '\n' + editor_test.getValue();
-      // let test_code = editor_test.getValue();
       let blob = new Blob([test_code], {type: 'text/javascript'});
       let js = URL.createObjectURL(blob);
 
       import(js).then(testjs => {
-        console.log('tested');
+        // console.log('tested');
+        // jsonView.format(data, '#result');
       });
     }
 
+    // 코드를 모듈로 만들기
+    // function modulize(moduleset) {
+    //   let export_key = /class (\w+) /.exec(moduleset.code)[1];
+    //   let modulized;
+    //
+    //   if (moduleset.imports==undefined) {
+    //     modulized = `define(function(){
+    //       return {
+    //         ${export_key}: ${moduleset.code}
+    //       }
+    //     })`;
+    //
+    //   } else {
+    //     let _imports = math.transpose(Object.entries(moduleset.imports));
+    //     let _modulized = _imports[1].map(_moduleset => modulize(_moduleset));
+    //
+    //     modulized = `define(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
+    //       return {
+    //         ${export_key}: ${moduleset.code}
+    //       }
+    //     })`
+    //   }
+    //
+    //   let blob = new Blob([modulized], {type: 'text/javascript'});
+    //   return URL.createObjectURL(blob);
+    // }
+    //
+    //
+    //
+    // // 코드 테스트하기
+    // function testify(moduleset) {
+    //   let mymodule = modulize(moduleset); console.log(mymodule);
+    //   let export_key = /class (\w+) /.exec(moduleset.code)[1];
+    //   let target;
+    //
+    //   requirejs([mymodule], function(mod) {
+    //     target = mod[export_key];
+    //
+    //     let params = {
+    //       apikey: '2JOML1ZPSME2Q28A',
+    //       sym: 'aapl',
+    //       interval: 'daily',
+    //       nbar:5
+    //     };
+    //
+    //     let mysrc = new target();
+    //     mysrc.get(params).then(function(output) {
+    //       console.log(output);
+    //     });
+    //   })
+    // }
+
+
+    // function load_module(module_pk) {
+    //   $.ajax({
+    //     type: 'GET',
+    //     // data: {},
+    //     dataType:'json',
+    //     cache: false,
+    //     // contentType: false,
+    //     // processData: false,
+    //     success: function(json) {
+    //       editor_module.setValue(json.code, -1);
+    //     }
+    //   });
+    // }
 
     $('.mymodule').click(function() {
       let code = $(this).attr('code');
       editor_module.setValue(code, -1);
     });
+
+
+
+    // let data = {
+    //   'first': 'name',
+    //   'last': 'test',
+    //   'what': ['1', '2']
+    // };
+    //
+    // jsonView.format(data, '#result');
   </script>
 {% endblock js %}
