@@ -53,3 +53,9 @@ def moduletree(requeset, pk):
     mod = Module.objects.get(pk=pk)
     # print(treefy(mod))
     return JsonResponse({'success':True, 'tree':treefy(mod)}, safe=False)
+
+
+def import_module(request, pk, alias):
+    mod = Module.objects.get(pk=pk)
+    mod.alias = alias
+    return render(request, 'florence/import_module.html', {'module':mod})
