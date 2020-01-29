@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from florence.models import Module, User
+import json
 
 # Create your views here.
 
@@ -45,13 +46,16 @@ def treefy(mod):
     return {
         'imports': imports,
         'code': mod.code,
+        'author': mod.author.email,
+        'author_avatar': mod.author.socialaccount_set.all()[0].get_avatar_url(),
+        'name': mod.name,
+        'description': mod.description,
         'exports': [exp.strip() for exp in mod.exports.split(',')]
     }
 
 
-def moduletree(requeset, pk):
+def moduletree(request, pk):
     mod = Module.objects.get(pk=pk)
-    # print(treefy(mod))
     return JsonResponse({'success':True, 'tree':treefy(mod)}, safe=False)
 
 
@@ -59,3 +63,21 @@ def import_module(request, pk, alias):
     mod = Module.objects.get(pk=pk)
     mod.alias = alias
     return render(request, 'florence/import_module.html', {'module':mod})
+
+
+def get_imported(request):
+    # module_id = request.POST.get('module_id', None)
+    # url = request.POST.get('url', None)
+    #alias = request.POST.get('alias', None)
+    imported = json.loads(request.POST.get('imported', None))
+    # print(imported)
+    #
+    # if (module is not None) and (url is None):
+    #     imported = Module.objects.get(pk=module_id)
+    #     imported.type = 'module'
+    #
+    # elif (module is None) and (url is not None):
+    #     imported.type = 'url'
+    #
+    # imported.alias = alias
+    return render(request, 'florence/imported.html', {'imported':imported})

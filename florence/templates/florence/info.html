@@ -1,0 +1,59 @@
+<style>
+  #info {
+    z-index: 50;
+    text-align: left;
+    position: fixed;
+    background: white;
+    padding: 20px;
+    left: 0;
+    right: 0;
+    height: 70%;
+    bottom: -50%;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -10px 50px rgba(0,0,0,0.2);
+    visibility: collapse;
+    opacity: 0;
+    transition: all 0.2s ease;
+  }
+
+  #info .name {
+    background: none;
+    padding: 5px;
+    /* font-family: 'Noto Sans KR', sans-serif; */
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  #info .description {
+    padding: 5px;
+  }
+
+  #info-show:checked ~ #info {
+    visibility: visible;
+    opacity: 1;
+    bottom: 0;
+    /* top: 90px; */
+  }
+
+  input[type='checkbox'] {
+    display: none;
+    visibility: hidden;
+  }
+</style>
+
+{% load static %}
+<input id="info-show" type="checkbox">
+
+<div id='info'>
+  <div class='close' style='position:absolute;top:20px;right:20px;cursor:pointer;' onclick='close_info()'>
+    <i class="material-icons">close</i>
+  </div>
+
+  <div class='name'></div>
+  <div class='description'></div>
+  <img class="ui author-avatar image" style="object-fit:cover;width:30px;height:30px;border-radius:5px;" onerror='imgerr'>
+  <div class='code' style='height:70%;overflow-y:scroll;'>
+    <div id='editor-import'></div>
+  </div>
+  <div class='exports'></div>
+</div>

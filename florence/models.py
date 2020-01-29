@@ -29,8 +29,6 @@ class Module(BigIdAbstract):
     keywords = models.TextField(max_length=500, null=True, blank=True)
     published = models.BooleanField(default=False)
     code = models.TextField(null=False, blank=False)
-    # imports = models.ManyToManyField('self', blank=True, related_name='imported_by')
-    # includes = models.TextField(max_length=500, null=True, blank=True)
     exports = models.TextField(max_length=500, null=True, blank=True)
 
     def __str__(self):

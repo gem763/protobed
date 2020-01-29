@@ -1,12 +1,21 @@
-<!-- <div class='ui fluid black button' style='margin-bottom:5px;'>
-  {{module.name}}
-</div> -->
-
-<div class="ui labeled fluid button" style='margin-bottom:5px;'>
-  <div class="ui black fluid button" style='text-align:left;'>
-    {{ module.name }}
+<div class='imported' style='margin-bottom:5px;' onclick='import_info(this)'>
+  <div class="ui labeled fluid button">
+    <div class="ui black fluid button" style='text-align:left;'>
+      {{ module.name }}
+    </div>
+    <a class="ui basic black left pointing label">
+      {{ module.alias }}
+    </a>
   </div>
-  <a class="ui basic black left pointing label">
-    {{ module.alias }}
-  </a>
+
+  <div class='infobox'
+       style='display:none;'
+       author-avatar='{{ module.author.socialaccount_set.all.0.get_avatar_url }}'
+       name='{{ module.name }}'
+       description='{{ module.description }}'
+       credit='{{ module.credit }}'
+       nlike='{{ module.nlike }}'
+       code='{{ module.code }}'
+       exports='{{ module.exports }}'>
+  </div>
 </div>

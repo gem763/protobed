@@ -3,7 +3,7 @@
 {% block css %}
   {{ block.super }}
   <style>
-    .codebox {
+    .code {
       width: 100%;
       background: whitesmoke;
       padding: 10px;
@@ -17,6 +17,14 @@
 
     #editor-test {
       min-height: 50px;
+      background: none;
+    }
+
+    #editor-import {
+      /* position: absolute; */
+      /* height: 100px !important; */
+      min-height: 200px;
+      /* min-height: 50% !important; */
       background: none;
     }
 
@@ -42,7 +50,7 @@
   <div class="ui text container">
     <div class='ui header'>Code</div>
     <div id='imports'></div>
-    <div class='codebox'>
+    <div class='code'>
       <div id="editor-module">function foo(items) {
   var x = "All this is syntax highlighted";
   return x;
@@ -54,7 +62,7 @@
 <div class="ui center aligned vertical segment" style="background:none;border:none;">
   <div class="ui text container">
     <div class='ui header'>Tester</div>
-    <div class='codebox'>
+    <div class='code'>
       <div id="editor-test">const stocks = new AlphaVantageStockDataSourcer();
 const params = {
   apikey: '2JOML1ZPSME2Q28A',
@@ -76,7 +84,7 @@ https://stackoverflow.com/questions/43796705/how-to-include-cdn-in-javascript-fi
 
 <div class="ui center aligned vertical segment" style="background:none;border:none;">
   <div class="ui text container">
-    <div id='result' class='codebox' style='text-align:left;font-size:12px;'>
+    <div id='result' class='code' style='text-align:left;font-size:12px;'>
     </div>
   </div>
 </div>
@@ -100,10 +108,11 @@ https://stackoverflow.com/questions/43796705/how-to-include-cdn-in-javascript-fi
 
 
 
-    let editor_module = init_editor('editor-module');
-    let editor_test = init_editor('editor-test');
+    let editor_module = init_editor('editor-module', false);
+    let editor_test = init_editor('editor-test', false);
+    let editor_import = init_editor('editor-import', true);
 
-    function init_editor(editor_id) {
+    function init_editor(editor_id, readOnly) {
       let editor = ace.edit(editor_id);
 
       editor.setOptions({
@@ -111,8 +120,9 @@ https://stackoverflow.com/questions/43796705/how-to-include-cdn-in-javascript-fi
   			highlightActiveLine: true, // 현재 행에 하이라이트 표시
   			theme: 'ace/theme/chrome', // 표시 테마
         showGutter: false,
-        readOnly: false,
-        mode: "ace/mode/javascript"
+        readOnly: readOnly,
+        mode: "ace/mode/javascript",
+        // autoScrollEditorIntoView: true,
   		})
 
       editor.commands.addCommand({
@@ -129,7 +139,7 @@ https://stackoverflow.com/questions/43796705/how-to-include-cdn-in-javascript-fi
     }
 
     $('#modulizer').click(function() {
-      moduletree();
+      // moduletree();
       // let code = editor_module.getValue();
       //
       // (async () => {
@@ -147,8 +157,64 @@ https://stackoverflow.com/questions/43796705/how-to-include-cdn-in-javascript-fi
 
     let imports = {}
 
+    // function get_imported(where, alias) {
+    //   var spinner = new Spinner().spin(document.body);
+    //   var data = { alias: alias };
+    //
+    //   if (jQuery.isNumeric(where)) {
+    //     data.module_id = where;
+    //
+    //   } else if (where.startsWith('http')) {
+    //     data.url = where;
+    //   }
+    //
+    //   $.ajax({
+    //     type: 'GET',
+    //     url: '{% url "get_imported" %}',
+    //     data: data,
+    //     dataType:'json',
+    //     cache: false,
+    //     success: function(resp) {
+    //       imports[alias] = modulize(resp.tree);
+    //       console.log(resp.tree);
+    //       // $('#imports').prepend($('<div>')).load('/florence/module/' + module_id + '/import/');
+    //       $.get('/florence/module/' + module_id + '/import/' + alias, function(html) {
+    //         $('#imports').prepend(html);
+    //         spinner.stop();
+    //       })
+    //     },
+    //     error: function(xhr, errmsg, err) {
+    //       console.log(xhr.status + ': ' + xhr.responseText);
+    //       spinner.stop();
+    //     },
+    //     complete: function() {
+    //     }
+    //   });
+    // }
+
+
+    function import_url(url, alias) {
+      var spinner = new Spinner().spin(document.body);
+
+      fetch(url).then(x => x.text())
+                .then(function(code) {
+                  imports[alias] = {
+                    alias: alias,
+                    name: url.split('/').slice(-1)[0],
+                    code: code
+                  };
+                  data = { imported: JSON.stringify(imports[alias]) };
+                  $.post('{% url "get_imported" %}', data, function(html) {
+                    $('#imports').prepend(html);
+                    spinner.stop();
+                  })
+                })
+    }
+
     function import_module(module_id, alias) {
       var spinner = new Spinner().spin(document.body);
+      var modulized;
+      var data;
 
       $.ajax({
         type: 'GET',
@@ -156,45 +222,53 @@ https://stackoverflow.com/questions/43796705/how-to-include-cdn-in-javascript-fi
         dataType:'json',
         cache: false,
         success: function(resp) {
-          imports[alias] = modulize(resp.tree);
-          console.log(resp.tree);
-          // $('#imports').prepend($('<div>')).load('/florence/module/' + module_id + '/import/');
-          $.get('/florence/module/' + module_id + '/import/' + alias, function(html) {
+          modulized = modulize(resp.tree);
+          resp.tree.url = modulized;
+          resp.tree.alias = alias;
+          imports[alias] = resp.tree;
+
+          data = {
+            imported: JSON.stringify(imports[alias])
+          };
+
+          $.post('{% url "get_imported" %}', data, function(html) {
             $('#imports').prepend(html);
+            spinner.stop();
           })
         },
         error: function(xhr, errmsg, err) {
           console.log(xhr.status + ': ' + xhr.responseText);
+          spinner.stop();
         },
         complete: function() {
-          spinner.stop();
         }
       });
     }
 
 
-    function moduletree() {
-      var spinner = new Spinner().spin(document.body);
 
-      $.ajax({
-        type: 'GET',
-        url: '{% url "moduletree" 3 %}',
-        dataType:'json',
-        cache: false,
-        success: function(resp) {
-          // tree = resp.tree;
-          // let mod = modulize(resp.tree);
-          // console.log(mod);
-          testify(resp.tree);
-        },
-        error: function(xhr, errmsg, err) {
-          console.log(xhr.status + ': ' + xhr.responseText);
-        },
-        complete: function() {
-          spinner.stop();
-        }
-      });
-    }
+    // function moduletree() {
+    //   var spinner = new Spinner().spin(document.body);
+    //
+    //   $.ajax({
+    //     type: 'GET',
+    //     url: '{% url "moduletree" 3 %}',
+    //     dataType:'json',
+    //     cache: false,
+    //     success: function(resp) {
+    //       // tree = resp.tree;
+    //       // let mod = modulize(resp.tree);
+    //       // console.log(mod);
+    //       testify(resp.tree);
+    //     },
+    //     error: function(xhr, errmsg, err) {
+    //       console.log(xhr.status + ': ' + xhr.responseText);
+    //     },
+    //     complete: function() {
+    //       spinner.stop();
+    //     }
+    //   });
+    // }
 
 
     function modulize(tree) {
@@ -293,5 +367,29 @@ https://stackoverflow.com/questions/43796705/how-to-include-cdn-in-javascript-fi
       let code = $(this).attr('code');
       editor_module.setValue(code, -1);
     });
+
+
+    function show_info(imported) {
+      let infobox = $(imported).children('.infobox');
+      set_info('name', infobox);
+      set_info('description', infobox);
+      set_info('exports', infobox);
+
+      editor_import.setValue(infobox.attr('code'), -1);
+      $('#info img.author-avatar').attr('src', infobox.attr('author-avatar'))
+      $('#info-show').prop('checked', true);
+    }
+
+    function set_info(el, from) {
+      $('#info').children('.'+el).html(from.attr(el));
+    }
+
+    function close_info() {
+      $('#info-show').prop('checked', false);
+    }
+
+    function imgerr(img) {
+      $(img).css('display', 'none');
+    }
   </script>
 {% endblock js %}
