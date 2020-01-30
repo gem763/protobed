@@ -8,13 +8,135 @@
 
 
 {% block mastbody %}
-<div style="height:1000px;">
-APPHUB
+<div class="ui center aligned vertical segment" style="background:lightblue;border:none;height:300px;">
+  <div class='ui text container'>
+    {% verbatim %}
+    <div id="importer">
+      <importbar
+        v-for='(imp, index) in imported'
+        :item='imp'
+        :key='index'
+        @remove='imported.splice(index, 1)'
+      ></importbar>
+
+    <importinfo></importinfo>
+    </div>
+    {% endverbatim %}
+  </div>
 </div>
 {% endblock mastbody %}
 
+
 {% block js %}
   {{ block.super }}
-  <script>
+  {% verbatim %}
+  <script type='text/x-template' id='importbar-template'>
+    <div style='margin-bottom:5px;' @click='show_info(item)'>
+      <div class="ui labeled fluid button">
+        <div class="ui black fluid button" style='text-align:left;'>
+          {{ item.name }}
+        </div>
+        <a class="ui basic black left pointing label" style='position:relative;padding-right:50px'>
+          {{ item.alias }}
+          <i class="material-icons" @click='$emit("remove")' style='position:absolute;top:50%;right:5px;transform:translate(0,-50%);'>close</i>
+        </a>
+      </div>
+    </div>
   </script>
+
+  <script type='text/x-template' id='importinfo-template'>
+    <transition name='fade'>
+      <div v-if='show' style='position:fixed;z-index:50;background:lightgreen;left:0;right:0;height:100px;bottom:0;'>
+        TESTSTE
+      </div>
+    </transition>
+  </script>
+
+  <!--
+  padding: 20px;
+  height: 70%;
+  bottom: -50%;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -10px 50px rgba(0,0,0,0.2);
+-->
+
+
+  <script>
+    Vue.component('importbar', {
+      template: '#importbar-template',
+      props: ['item'],
+      methods: {
+        show_info: function(item) {
+          eventbus.$emit('show_info', item);
+        }
+      }
+    })
+
+    Vue.component('importinfo', {
+      template: '#importinfo-template',
+      data: function() {
+        return {
+          show: false
+        }
+      },
+      created: function() {
+        eventbus.$on('show_info', function(item) {
+          this.show = true;
+          console.log(item);
+        })
+      }
+    })
+
+    var eventbus = new Vue();
+
+    var importer = new Vue({
+      el: '#importer',
+
+      data: {
+        imported: [],
+        spinner: new Spinner(),
+      },
+
+      methods: {
+        spinner_start: function() {
+          this.spinner.spin(document.body);
+        },
+
+        spinner_stop: function() {
+          this.spinner.stop();
+        },
+
+        has: function(alias) {
+          for (imp of this.imported) {
+            if (imp.alias==alias) {
+              console.log('alias duplicated');
+              return true;
+            }
+          }
+
+          return false;
+        },
+
+        import_cdn: function(url, alias) {
+          if (this.has(alias)) return;
+
+          var importer = this;
+          importer.spinner_start();
+
+          fetch(url)
+            .then(x => x.text())
+            .then(function(code) {
+              importer.imported.unshift({
+                alias: alias,
+                name: url.split('/').slice(-1)[0],
+                code: code
+              });
+              importer.spinner_stop();
+            }
+          );
+        }
+      }
+    })
+  </script>
+  {% endverbatim %}
 {% endblock js %}
