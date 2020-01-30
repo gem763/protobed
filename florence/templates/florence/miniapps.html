@@ -3,6 +3,14 @@
 {% block css %}
   {{ block.super }}
   <style>
+    .fade-enter-active, .fade-leave-active {
+      transition: all 0.2s ease;
+    }
+    .fade-enter, .fade-leave-to {
+      /* bottom: -50%; */
+      opacity: 0;
+      transform: translateY(50%);
+    }
   </style>
 {% endblock css %}
 
@@ -17,9 +25,12 @@
         :item='imp'
         :key='index'
         @remove='imported.splice(index, 1)'
+        @show_info='focused=imp'
       ></importbar>
 
-    <importinfo></importinfo>
+      <importinfo
+        :item='focused'
+      ></importinfo>
     </div>
     {% endverbatim %}
   </div>
@@ -31,7 +42,7 @@
   {{ block.super }}
   {% verbatim %}
   <script type='text/x-template' id='importbar-template'>
-    <div style='margin-bottom:5px;' @click='show_info(item)'>
+    <div style='margin-bottom:5px;' @click='$emit("show_info")'>
       <div class="ui labeled fluid button">
         <div class="ui black fluid button" style='text-align:left;'>
           {{ item.name }}
@@ -46,54 +57,32 @@
 
   <script type='text/x-template' id='importinfo-template'>
     <transition name='fade'>
-      <div v-if='show' style='position:fixed;z-index:50;background:lightgreen;left:0;right:0;height:100px;bottom:0;'>
-        TESTSTE
+      <div v-if='item' style='position:fixed;z-index:50;background:white;left:0;right:0;height:70%;bottom:0;border-radius:20px 20px 0 0;box-shadow:0 -10px 50px rgba(0,0,0,0.2);'>
+        {{ item.code }}
       </div>
     </transition>
   </script>
 
-  <!--
-  padding: 20px;
-  height: 70%;
-  bottom: -50%;
-  border-radius: 20px 20px 0 0;
-  box-shadow: 0 -10px 50px rgba(0,0,0,0.2);
--->
 
 
   <script>
     Vue.component('importbar', {
       template: '#importbar-template',
-      props: ['item'],
-      methods: {
-        show_info: function(item) {
-          eventbus.$emit('show_info', item);
-        }
-      }
+      props: ['item']
     })
 
     Vue.component('importinfo', {
       template: '#importinfo-template',
-      data: function() {
-        return {
-          show: false
-        }
-      },
-      created: function() {
-        eventbus.$on('show_info', function(item) {
-          this.show = true;
-          console.log(item);
-        })
-      }
+      props: ['item']
     })
 
-    var eventbus = new Vue();
 
     var importer = new Vue({
       el: '#importer',
 
       data: {
         imported: [],
+        focused: false,
         spinner: new Spinner(),
       },
 
