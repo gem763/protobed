@@ -11,25 +11,34 @@
       opacity: 0;
       transform: translateY(50%);
     }
+
+    /* .module.search input:focus ~ .placeholder {
+      display: none;
+    } */
   </style>
 {% endblock css %}
 
 
 {% block mastbody %}
-<div class="ui center aligned vertical segment" style="background:lightblue;border:none;height:300px;">
+<div class="ui center aligned vertical segment" style="background:none;border:none;height:300px;">
   <div class='ui text container'>
     {% verbatim %}
     <div id="importer">
+      <librarysearcher
+        @library_import='library_import($event)'
+      ></librarysearcher>
+
       <importbar
         v-for='(imp, index) in imported'
         :item='imp'
         :key='index'
-        @remove='imported.splice(index, 1)'
-        @show_info='focused=imp'
+        @remove='remove(index)'
+        @show_detail='show_detail(index)'
       ></importbar>
 
       <importinfo
-        :item='focused'
+        :item='detailed'
+        @hide_detail='hide_detail'
       ></importinfo>
     </div>
     {% endverbatim %}
@@ -41,8 +50,40 @@
 {% block js %}
   {{ block.super }}
   {% verbatim %}
+  <script type='text/x-template' id='librarysearcher-template'>
+    <table class='ui unstackable basic table'>
+      <tbody>
+        <tr>
+          <td class='center aligned' style='background:none;padding:5px;width:50px;'>
+            <div class='ui icon compact button' style='width:40px;height:40px;margin:0;'>
+              <i class="material-icons">unfold_less</i>
+            </div>
+          </td>
+
+          <td style='background:none;padding:5px;'>
+            <div class="ui fluid search" style='background:none;'>
+              <div class="ui fluid transparent input" style='background:none;'>
+                <input v-model='searchkeyword' class="prompt" type="text">
+                <div v-if='!searchkeyword' class='placeholder' style='position:absolute;top:0;left:0;width:100%;background:none;color:silver;text-align:center;z-index:-1;'>
+                  <i class="search icon"></i>Search modules
+                </div>
+              </div>
+              <div class="results"></div>
+            </div>
+          </td>
+
+          <td class='center aligned' style='background:none;padding:5px;width:50px;'>
+            <div class='ui icon compact button' style='width:40px;height:40px;margin:0;' @click='$emit("library_import", searchkeyword)'>
+              <i class="material-icons">play_for_work</i>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </script>
+
   <script type='text/x-template' id='importbar-template'>
-    <div style='margin-bottom:5px;' @click='$emit("show_info")'>
+    <div style='margin-bottom:5px;' @click='$emit("show_detail")'>
       <div class="ui labeled fluid button">
         <div class="ui black fluid button" style='text-align:left;'>
           {{ item.name }}
@@ -58,14 +99,46 @@
   <script type='text/x-template' id='importinfo-template'>
     <transition name='fade'>
       <div v-if='item' style='position:fixed;z-index:50;background:white;left:0;right:0;height:70%;bottom:0;border-radius:20px 20px 0 0;box-shadow:0 -10px 50px rgba(0,0,0,0.2);'>
-        {{ item.code }}
+
+          <div @click='$emit("hide_detail")' style='position:absolute;top:15px;right:15px;cursor:pointer;'>
+            <i class="material-icons">close</i>
+          </div>
+
+          <div class='ui text container' style='display:flex;flex-direction:column;'>
+            <div style='text-align:left;padding:20px;'>
+              <div v-if='item.name' style='font-size:20px;font-weight:bold;'>{{ item.name }}</div>
+              <div v-if='item.description'>{{ item.description }}</div>
+              <img v-if='item.author' class="ui image" style="object-fit:cover;width:30px;height:30px;border-radius:5px;">
+            </div>
+
+            <codeview style='flex-grow:1;'></codeview>
+          </div>
+
       </div>
     </transition>
   </script>
 
 
+  <script type='text/x-template' id='codeview-template'>
+    <div style='background:whitesmoke;'>
+      <div class="ui black fluid button" style='margin:5px;'>imported</div>
+
+      <div ref='editor' style='height:200px;background:none;'>function foo(items) {
+  var x = "All this is syntax highlighted";
+  return x;}</div>
+    </div>
+  </script>
 
   <script>
+    Vue.component('librarysearcher', {
+      template: '#librarysearcher-template',
+      data: function() {
+        return {
+          searchkeyword: ''
+        }
+      }
+    })
+
     Vue.component('importbar', {
       template: '#importbar-template',
       props: ['item']
@@ -76,13 +149,24 @@
       props: ['item']
     })
 
+    Vue.component('codeview', {
+      template: '#codeview-template',
+      data: function() {
+        return {
+          editor: null
+        }
+      },
+      mounted: function() {
+        this.editor = ace.edit(this.$refs['editor']);
+      }
+    })
 
     var importer = new Vue({
       el: '#importer',
 
       data: {
         imported: [],
-        focused: false,
+        detailed: null,
         spinner: new Spinner(),
       },
 
@@ -95,18 +179,61 @@
           this.spinner.stop();
         },
 
+        remove: function(index) {
+          this.imported.splice(index, 1)
+        },
+
+        show_detail: function(index) {
+          this.detailed = this.imported[index];
+        },
+
+        hide_detail: function() {
+          this.detailed = null;
+        },
+
         has: function(alias) {
-          for (imp of this.imported) {
+          for (let imp of this.imported) {
             if (imp.alias==alias) {
               console.log('alias duplicated');
               return true;
             }
           }
-
           return false;
         },
 
-        import_cdn: function(url, alias) {
+        guess_alias: function(url) {
+          let name = url.split('/').slice(-1)[0];
+          var pattern = /[^(.a-zA-Z)]/gi;
+
+          if (pattern.test(name))
+            name = name.replace(pattern, '');
+
+          // var candidates = [];
+          // name.split('.').forEach(n => {
+          //   if (n!='js') candidates.push(n);
+          // });
+          // return candidates.join('_')
+
+          for (let n of name.split('.')) {
+            if (n!='js' && n!='min' && n!='bundled')
+              return n;
+          }
+          return 'tmp'
+        },
+
+        library_import: function(keyword) {
+          if (keyword.startsWith('http')) {
+              let alias = this.guess_alias(keyword);
+              this.import_from_cdn(keyword, alias);
+
+          } else {}
+        },
+
+        import_from_florence: function(mid, alias) {
+          console.log('test');
+        },
+
+        import_from_cdn: function(url, alias) {
           if (this.has(alias)) return;
 
           var importer = this;
@@ -129,3 +256,5 @@
   </script>
   {% endverbatim %}
 {% endblock js %}
+
+<!-- https://cdnjs.com/api -->
