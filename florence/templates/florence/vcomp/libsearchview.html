@@ -8,52 +8,11 @@
 </style>
 
 {% verbatim %}
-<!-- <script type='text/x-template' id='libsearchview-template'>
-  <table class='ui unstackable basic table' :style='libsearchview_style' style='margin:0;position:absolute;z-index:10;'>
-    <tbody>
-      <tr>
-        <td class='center aligned' style='background:none;padding:5px;width:50px;'>
-          <div class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;'>
-            <i class="material-icons">unfold_less</i>
-          </div>
-        </td>
-
-        <td style='background:none;padding:0px;'>
-          <div class="ui fluid search" style='background:none;'>
-            <div class="ui fluid transparent input" style='background:none;'>
-              <div v-if='!focused' class='placeholder' style='position:absolute;top:0;left:0;width:100%;background:none;color:silver;text-align:center;z-index:1;'>
-                <i class="search icon"></i>Search libraries
-              </div>
-              <input v-model='searchkeyword' @focus='focused=true' @blur='focused=false' class="prompt" type="text" style='z-index:2;font-weight:bold;' spellcheck="false">
-            </div>
-          </div>
-        </td>
-
-        <td class='center aligned' style='background:none;padding:5px;width:50px;'>
-          <div class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;' @click='$emit("import_library", searchkeyword)'>
-            <i class="material-icons">add</i>
-          </div>
-        </td>
-      </tr>
-
-      <template v-if='searched.clib' class="searchresults ui segments">
-        <tr v-for='item in searched.clib'>
-          <td colspan='3'>
-            <div style='font-weight:bold;'>{{ item.name }}</div>
-            <div style='font-size:10px;'>{{ item.latest }}</div>
-          </td>
-        </tr>
-      </template>
-
-    </tbody>
-  </table>
-</script> -->
-
 <script type='text/x-template' id='libsearchview-template'>
-  <div class='ui segments' style='box-shadow:none;background:white;border-color:orange;z-index:10;'>
+  <div v-if='active' class='ui segments' style='position:absolute;top:0;left:0;width:100%;box-shadow:none;background:white;border-color:orange;z-index:10;margin:0;'>
     <div class='ui segment'>
       <div class='ui fluid transparent input' style='padding-left:30px;padding-right:30px;'>
-        <input v-model='searchkeyword' class="prompt" type="text" style='font-weight:bold;background:lightblue;' spellcheck="false">
+        <input ref='input' v-model='searchkeyword' class="prompt" type="text" style='font-weight:bold;background:lightblue;' spellcheck="false">
       </div>
 
       <div class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;left:5px;transform:translateY(-50%);'>
@@ -94,13 +53,26 @@
 </script>
 
 <script>
+  Vue.directive('click-outside', {
+    bind: function (el, binding, vnode) {
+      this.event = function (event) {
+        if (!(el == event.target || el.contains(event.target))) {
+          vnode.context[binding.expression](event);
+        }
+      };
+      document.body.addEventListener('click', this.event)
+    },
+    unbind: function (el) {
+      document.body.removeEventListener('click', this.event)
+    },
+  });
+
   Vue.component('libsearchview', {
     template: '#libsearchview-template',
     props: ['active'],
 
     data: function() {
       return {
-        // focused: false,
         searchkeyword: '',
         searched: {
           clib: null,
@@ -110,9 +82,19 @@
     },
 
     watch: {
-      active: function(now, prev) {
-        if (!now) {
-          this.searchkeyword = '';
+      active: function(is_active, was_active) {
+        if (is_active) {
+          var libsearchview = this
+          this.$nextTick(function() {
+            libsearchview.$refs.input.focus();
+            // setTimeout(function() {
+            //   libsearchview.$refs.input.focus();
+            // }, 0);
+          });
+
+          // this.searchkeyword = '';
+        } else {
+          // this.$refs.input.blur();
         }
       },
 
@@ -148,6 +130,10 @@
     },
 
     methods: {
+      // test: function() {
+      //   this.$emit('deactivate');
+      // },
+
       search: function() {
         this.search_clib();
         this.search_flib();

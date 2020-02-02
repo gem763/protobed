@@ -7,6 +7,8 @@
 {% endblock css %}
 
 
+<!-- @deactivate='onsearch=!onsearch' -->
+<!-- https://stackoverflow.com/questions/36170425/detect-click-outside-element -->
 {% block mastbody %}
 <div class="ui center aligned vertical segment" style="background:none;border:none;height:300px;">
   <div class='ui text container'>
@@ -19,6 +21,7 @@
 
       <importlistview
         :items='imported'
+        @click.native='onsearch=true'
         @show_detail='show_detail($event)'
       ></importlistview>
 
@@ -35,9 +38,9 @@
 
 {% block js %}
   {{ block.super }}
-  {% include "florence/importlistview.html" %}
-  {% include "florence/libview.html" %}
-  {% include "florence/libsearchview.html" %}
+  {% include "florence/vcomp/importlistview.html" %}
+  {% include "florence/vcomp/libview.html" %}
+  {% include "florence/vcomp/libsearchview.html" %}
 
   {% verbatim %}
   <script>
@@ -47,7 +50,7 @@
       data: {
         imported: [],
         detailed: null,
-        onsearch: true,
+        onsearch: false,
         spinner: new Spinner(),
       },
 
