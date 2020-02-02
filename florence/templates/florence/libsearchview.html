@@ -1,0 +1,171 @@
+<style>
+  .searchkeyword-clear-enter-active, .searchkeyword-clear-leave-active {
+    transition: all 0.2s ease;
+  }
+  .searchkeyword-clear-enter, .searchkeyword-clear-leave-to {
+    opacity: 0;
+  }
+</style>
+
+{% verbatim %}
+<!-- <script type='text/x-template' id='libsearchview-template'>
+  <table class='ui unstackable basic table' :style='libsearchview_style' style='margin:0;position:absolute;z-index:10;'>
+    <tbody>
+      <tr>
+        <td class='center aligned' style='background:none;padding:5px;width:50px;'>
+          <div class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;'>
+            <i class="material-icons">unfold_less</i>
+          </div>
+        </td>
+
+        <td style='background:none;padding:0px;'>
+          <div class="ui fluid search" style='background:none;'>
+            <div class="ui fluid transparent input" style='background:none;'>
+              <div v-if='!focused' class='placeholder' style='position:absolute;top:0;left:0;width:100%;background:none;color:silver;text-align:center;z-index:1;'>
+                <i class="search icon"></i>Search libraries
+              </div>
+              <input v-model='searchkeyword' @focus='focused=true' @blur='focused=false' class="prompt" type="text" style='z-index:2;font-weight:bold;' spellcheck="false">
+            </div>
+          </div>
+        </td>
+
+        <td class='center aligned' style='background:none;padding:5px;width:50px;'>
+          <div class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;' @click='$emit("import_library", searchkeyword)'>
+            <i class="material-icons">add</i>
+          </div>
+        </td>
+      </tr>
+
+      <template v-if='searched.clib' class="searchresults ui segments">
+        <tr v-for='item in searched.clib'>
+          <td colspan='3'>
+            <div style='font-weight:bold;'>{{ item.name }}</div>
+            <div style='font-size:10px;'>{{ item.latest }}</div>
+          </td>
+        </tr>
+      </template>
+
+    </tbody>
+  </table>
+</script> -->
+
+<script type='text/x-template' id='libsearchview-template'>
+  <div class='ui segments' style='box-shadow:none;background:white;border-color:orange;z-index:10;'>
+    <div class='ui segment'>
+      <div class='ui fluid transparent input' style='padding-left:30px;padding-right:30px;'>
+        <input v-model='searchkeyword' class="prompt" type="text" style='font-weight:bold;background:lightblue;' spellcheck="false">
+      </div>
+
+      <div class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;left:5px;transform:translateY(-50%);'>
+        <i class="material-icons">search</i>
+      </div>
+
+      <transition name='searchkeyword-clear'>
+        <div v-if='searchkeyword' class='ui icon compact button' @click='searchkeyword=""' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);'>
+          <i class="material-icons">close</i>
+        </div>
+      </transition>
+    </div>
+
+    <template class="searchresults">
+      <div v-for='item in searched.clib' class='ui left aligned segment' style='padding-right:50px;'>
+        <span style='font-weight:bold;font-size:20px;'>{{ item.name }}</span>
+        <div class='ui compact mini button' style='font-size:10px;margin-left:5px;padding:5px;transform:translateY(-3px)'>
+          {{ item.version }}
+        </div>
+
+        <div style='font-size:12px;'>{{ item.description }}</div>
+        <div style='font-size:12px;color:silver;'>{{ item.latest }}</div>
+
+        <div class='ui icon compact button' @click='$emit("import_lib", item)' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);'>
+          <i class="material-icons">add</i>
+        </div>
+      </div>
+
+      <div v-for='item in searched.flib' class='ui left aligned segment' style='padding-right:30px;'>
+      </div>
+
+      <div v-if='!searched.clib && !searched.flib' class='ui segment' style='padding:10px;color:black;'>
+        Type keywords of js library to import
+      </div>
+    </template>
+
+  </div>
+</script>
+
+<script>
+  Vue.component('libsearchview', {
+    template: '#libsearchview-template',
+    props: ['active'],
+
+    data: function() {
+      return {
+        // focused: false,
+        searchkeyword: '',
+        searched: {
+          clib: null,
+          flib: null
+        }
+      }
+    },
+
+    watch: {
+      active: function(now, prev) {
+        if (!now) {
+          this.searchkeyword = '';
+        }
+      },
+
+      searchkeyword: function(newKeyword, oldKeyword) {
+        if (newKeyword.trim().length > 2) {
+          this.debouncedSearch();
+
+        } else {
+          this.searched.clib = null;
+        }
+      }
+    },
+
+    computed: {
+      // libsearchview_style: function() {
+      //   if (this.focused || this.searched.clib || this.searched.lib) {
+      //     return {
+      //       background: 'white',
+      //       border: '1px solid orange'
+      //     }
+      //
+      //   } else {
+      //     return {
+      //       background: 'whitesmoke',
+      //       border: '1px solid whitesmoke'
+      //     }
+      //   }
+      // }
+    },
+
+    created: function() {
+      this.debouncedSearch = _.debounce(this.search, 500);
+    },
+
+    methods: {
+      search: function() {
+        this.search_clib();
+        this.search_flib();
+      },
+
+      search_clib: function() {
+        var api = `https://api.cdnjs.com/libraries?search=${this.searchkeyword}&fields=version,description,author`
+        fetch(api)
+          .then(x => x.json())
+          .then(js => {
+            this.searched.clib = js.results.splice(0, 3);
+          });
+      },
+
+      search_flib: function() {
+        console.log('search lib in florence');
+      }
+    }
+  });
+</script>
+{% endverbatim %}

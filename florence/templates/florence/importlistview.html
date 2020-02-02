@@ -1,0 +1,42 @@
+{% verbatim %}
+<script type='text/x-template' id='importlistview-template'>
+  <div class='ui segments' style='box-shadow:none;background:whitesmoke;border-color:whitesmoke;'>
+    <div class='ui segment' style='background:none;color:silver;'>
+      <i class="search icon"></i>Search libraries
+
+      <div class='ui icon compact button' @click='show=!show' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;left:5px;transform:translateY(-50%);'>
+        <i v-if='show' key='1' class="material-icons">keyboard_arrow_down</i>
+        <i v-else key='2' class="material-icons">keyboard_arrow_up</i>
+      </div>
+
+    </div>
+
+    <template v-if='show'>
+      <template v-if='items.length'>
+        <div v-for='(item, index) in items' @click='$emit("show_detail", index)' :key='index' class='ui right aligned segment' style='background:none;padding:10px;padding-right:50px;'>
+          <div class='ui black compact small button' style='position:absolute;top:50%;left:5px;font-weight:bold;transform:translateY(-50%);'>
+            {{ item.alias }}
+          </div>
+          <div>{{ item.name }}</div>
+          <i class="material-icons" @click.stop='items.splice(index, 1)' style='position:absolute;top:50%;right:5px;transform:translateY(-50%);cursor:pointer;'>close</i>
+        </div>
+      </template>
+      <div v-else key='none' class='ui segment' style='background:none;padding:10px;color:black'>
+        No library imported
+      </div>
+    </template>
+  </div>
+</script>
+
+<script>
+  Vue.component('importlistview', {
+    template: '#importlistview-template',
+    props: ['items'],
+    data: function() {
+      return {
+        show: true
+      }
+    }
+  });
+</script>
+{% endverbatim %}

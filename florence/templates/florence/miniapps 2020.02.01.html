@@ -1,0 +1,327 @@
+{% extends "florence/layout.html" %}
+
+{% block css %}
+  {{ block.super }}
+  <style>
+    .fade-enter-active, .fade-leave-active {
+      transition: all 0.2s ease;
+    }
+    .fade-enter, .fade-leave-to {
+      /* bottom: -50%; */
+      opacity: 0;
+      transform: translateY(50%);
+    }
+
+    /* .module.search input:focus ~ .placeholder {
+      display: none;
+    } */
+  </style>
+{% endblock css %}
+
+
+{% block mastbody %}
+<div class="ui center aligned vertical segment" style="background:none;border:none;height:300px;">
+  <div class='ui text container'>
+    {% verbatim %}
+    <div id="importer" style='position:relative;'>
+      <librarysearcher
+        @import_library='import_library($event)'
+      ></librarysearcher>
+
+      <importbar
+        v-for='(imp, index) in imported'
+        :item='imp'
+        :key='index'
+        @remove='remove(index)'
+        @show_detail='show_detail(index)'
+      ></importbar>
+
+      <importinfo
+        :item='detailed'
+        @hide_detail='hide_detail'
+      ></importinfo>
+    </div>
+    {% endverbatim %}
+  </div>
+</div>
+{% endblock mastbody %}
+
+
+{% block js %}
+  {{ block.super }}
+  {% verbatim %}
+  <script type='text/x-template' id='librarysearcher-template'>
+    <table class='ui unstackable basic table' :style='librarysearcher_style' style='margin:0;position:absolute;z-index:10;'>
+      <tbody>
+        <tr>
+          <td class='center aligned' style='background:none;padding:5px;width:50px;'>
+            <div class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;'>
+              <i class="material-icons">unfold_less</i>
+            </div>
+          </td>
+
+          <td style='background:none;padding:0px;'>
+            <div class="ui fluid search" style='background:none;'>
+              <div class="ui fluid transparent input" style='background:none;'>
+                <div v-if='!focused' class='placeholder' style='position:absolute;top:0;left:0;width:100%;background:none;color:silver;text-align:center;z-index:1;'>
+                  <i class="search icon"></i>Search libraries
+                </div>
+                <input v-model='searchkeyword' @focus='focused=true' @blur='focused=false' class="prompt" type="text" style='z-index:2;font-weight:bold;' spellcheck="false">
+              </div>
+            </div>
+          </td>
+
+          <td class='center aligned' style='background:none;padding:5px;width:50px;'>
+            <div class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;' @click='$emit("import_library", searchkeyword)'>
+              <i class="material-icons">add</i>
+            </div>
+          </td>
+        </tr>
+
+        <template v-if='searched.clibrary' class="searchresults ui segments">
+          <tr v-for='item in searched.clibrary'>
+            <td colspan='3'>
+              <div style='font-weight:bold;'>{{ item.name }}</div>
+              <div style='font-size:10px;'>{{ item.latest }}</div>
+            </td>
+          </tr>
+        </template>
+
+      </tbody>
+    </table>
+  </script>
+
+  <script type='text/x-template' id='importbar-template'>
+    <div style='margin-bottom:5px;' @click='$emit("show_detail")'>
+      <div class="ui labeled fluid button">
+        <div class="ui black fluid button" style='text-align:left;'>
+          {{ item.name }}
+        </div>
+        <a class="ui basic black left pointing label" style='position:relative;padding-right:50px;border-top-color:silver !important;border-bottom-color:silver !important;border-right-color:silver !important;'>
+          {{ item.alias }}
+          <i class="material-icons" @click='$emit("remove")' style='position:absolute;top:50%;right:5px;transform:translate(0,-50%);'>close</i>
+        </a>
+      </div>
+    </div>
+  </script>
+
+  <script type='text/x-template' id='importinfo-template'>
+    <transition name='fade'>
+      <div v-if='item' style='position:fixed;z-index:50;background:white;left:0;right:0;height:70%;bottom:0;border-radius:20px 20px 0 0;box-shadow:0 -10px 50px rgba(0,0,0,0.2);'>
+
+          <div @click='$emit("hide_detail")' style='position:absolute;top:15px;right:15px;cursor:pointer;'>
+            <i class="material-icons">close</i>
+          </div>
+
+          <div class='ui text container' style='display:flex;flex-direction:column;'>
+            <div style='text-align:left;padding:20px;'>
+              <div v-if='item.name' style='font-size:20px;font-weight:bold;'>{{ item.name }}</div>
+              <div v-if='item.description'>{{ item.description }}</div>
+              <img v-if='item.author' class="ui image" style="object-fit:cover;width:30px;height:30px;border-radius:5px;">
+            </div>
+
+            <codeview style='flex-grow:1;'></codeview>
+          </div>
+
+      </div>
+    </transition>
+  </script>
+
+
+  <script type='text/x-template' id='codeview-template'>
+    <div style='background:whitesmoke;'>
+      <div class="ui black fluid button" style='margin:5px;'>imported</div>
+
+      <div ref='editor' style='height:200px;background:none;'>function foo(items) {
+  var x = "All this is syntax highlighted";
+  return x;}</div>
+    </div>
+  </script>
+
+  <script>
+    Vue.component('librarysearcher', {
+      template: '#librarysearcher-template',
+      data: function() {
+        return {
+          focused: false,
+          searchkeyword: '',
+          searched: {
+            clibrary: null, //[{name:'test1', latest:'https://test1'},{name:'test2', latest:'https://test2'}],
+            flibrary: null
+          }
+        }
+      },
+
+      watch: {
+        searchkeyword: function(newKeyword, oldKeyword) {
+          if (newKeyword.trim().length > 2) {
+            this.debouncedSearch();
+
+          } else {
+            this.searched.clibrary = null;
+          }
+        }
+      },
+
+      computed: {
+        librarysearcher_style: function() {
+          if (this.focused || this.searched.clibrary || this.searched.flibrary) {
+            return {
+              background: 'white',
+              border: '1px solid orange'
+            }
+
+          } else {
+            return {
+              background: 'whitesmoke',
+              border: '1px solid whitesmoke'
+            }
+          }
+        }
+      },
+
+      created: function() {
+        this.debouncedSearch = _.debounce(this.search, 500);
+      },
+
+      methods: {
+        search: function() {
+          var api = 'https://api.cdnjs.com/libraries?search=' + this.searchkeyword;
+          fetch(api)
+            .then(x => x.json())
+            .then(js => {
+              this.searched.clibrary = js.results.splice(0, 5);
+            });
+        }
+      }
+    })
+
+    Vue.component('importbar', {
+      template: '#importbar-template',
+      props: ['item']
+    })
+
+    Vue.component('importinfo', {
+      template: '#importinfo-template',
+      props: ['item']
+    })
+
+    Vue.component('codeview', {
+      template: '#codeview-template',
+      data: function() {
+        return {
+          editor: null
+        }
+      },
+      mounted: function() {
+        this.editor = ace.edit(this.$refs['editor']);
+      }
+    })
+
+    var importer = new Vue({
+      el: '#importer',
+
+      data: {
+        imported: [],
+        detailed: null,
+        spinner: new Spinner(),
+      },
+
+      methods: {
+        spinner_start: function() {
+          this.spinner.spin(document.body);
+        },
+
+        spinner_stop: function() {
+          this.spinner.stop();
+        },
+
+        remove: function(index) {
+          this.imported.splice(index, 1)
+        },
+
+        show_detail: function(index) {
+          this.detailed = this.imported[index];
+        },
+
+        hide_detail: function() {
+          this.detailed = null;
+        },
+
+        has: function(alias) {
+          for (let imp of this.imported) {
+            if (imp.alias==alias) {
+              console.log('alias duplicated');
+              return true;
+            }
+          }
+          return false;
+        },
+
+        guess_alias: function(url) {
+          let name = url.split('/').slice(-1)[0];
+          var pattern = /[^(.a-zA-Z)]/gi;
+
+          if (pattern.test(name))
+            name = name.replace(pattern, '');
+
+          for (let n of name.split('.')) {
+            if (n!='js' && n!='min' && n!='bundled')
+              return n;
+          }
+          return 'tmp'
+        },
+
+        import_library: function(keyword) {
+          if (keyword.startsWith('http')) {
+              let alias = this.guess_alias(keyword);
+              this.import_clibrary(keyword, alias);
+
+          } else {}
+        },
+
+        import_flibrary: function(flid, alias) {
+          console.log('test');
+        },
+
+        import_clibrary: function(url, alias) {
+          if (this.has(alias)) return;
+
+          var importer = this;
+          importer.spinner_start();
+
+          fetch(url)
+            .then(x => x.text())
+            .then(function(code) {
+              importer.imported.unshift({
+                alias: alias,
+                name: url.split('/').slice(-1)[0],
+                code: code
+              });
+              importer.spinner_stop();
+            }
+          );
+        }
+      }
+    })
+  </script>
+  {% endverbatim %}
+
+  <!-- <script>
+    $('.ui.search')
+      .search({
+        apiSettings: {
+          url: '//api.cdnjs.com/libraries?search={query}'
+        },
+        fields: {
+          results : 'results',
+          title   : 'name',
+          description     : 'latest'
+        },
+        minCharacters : 3
+      })
+    ;
+  </script> -->
+{% endblock js %}
+
+<!-- https://cdnjs.com/api -->

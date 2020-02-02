@@ -1,0 +1,25 @@
+{% verbatim %}
+<script type='text/x-template' id='codeview-template'>
+  <div style='background:whitesmoke;'>
+    <div class="ui black fluid button" style='margin:5px;'>imported</div>
+
+    <div ref='editor' style='height:200px;background:none;'>function foo(items) {
+var x = "All this is syntax highlighted";
+return x;}</div>
+  </div>
+</script>
+
+<script>
+  Vue.component('codeview', {
+    template: '#codeview-template',
+    data: function() {
+      return {
+        editor: null
+      }
+    },
+    mounted: function() {
+      this.editor = ace.edit(this.$refs['editor']);
+    }
+  });
+</script>
+{% endverbatim %}

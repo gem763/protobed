@@ -1,0 +1,42 @@
+{% include "florence/codeview.html" %}
+
+<style>
+  .fade-enter-active, .fade-leave-active {
+    transition: all 0.2s ease;
+  }
+  .fade-enter, .fade-leave-to {
+    opacity: 0;
+    transform: translateY(50%);
+  }
+</style>
+
+{% verbatim %}
+<script type='text/x-template' id='libview-template'>
+  <transition name='fade'>
+    <div v-if='item' style='position:fixed;z-index:50;background:white;left:0;right:0;height:70%;bottom:0;border-radius:20px 20px 0 0;box-shadow:0 -10px 50px rgba(0,0,0,0.2);'>
+
+        <div @click='$emit("hide_detail")' style='position:absolute;top:15px;right:15px;cursor:pointer;'>
+          <i class="material-icons">close</i>
+        </div>
+
+        <div class='ui text container' style='display:flex;flex-direction:column;'>
+          <div style='text-align:left;padding:20px;'>
+            <div v-if='item.name' style='font-size:20px;font-weight:bold;'>{{ item.name }}</div>
+            <div v-if='item.description'>{{ item.description }}</div>
+            <img v-if='item.author' class="ui image" style="object-fit:cover;width:30px;height:30px;border-radius:5px;">
+          </div>
+
+          <codeview style='flex-grow:1;'></codeview>
+        </div>
+
+    </div>
+  </transition>
+</script>
+
+<script>
+  Vue.component('libview', {
+    template: '#libview-template',
+    props: ['item']
+  });
+</script>
+{% endverbatim %}
