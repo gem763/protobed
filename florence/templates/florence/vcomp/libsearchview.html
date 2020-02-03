@@ -5,10 +5,18 @@
   .searchkeyword-clear-enter, .searchkeyword-clear-leave-to {
     opacity: 0;
   }
+
+  .libsearchview-show-enter-active, .libsearchview-show-leave-active {
+    transition: all 0.2s ease;
+  }
+  .libsearchview-show-enter, .libsearchview-show-leave-to {
+    opacity: 0;
+  }
 </style>
 
 {% verbatim %}
 <script type='text/x-template' id='libsearchview-template'>
+  <transition name='libsearchview-show'>
   <div v-if='active' class='ui segments' @mousedown.prevent style='position:absolute;top:0;left:0;width:100%;box-shadow:none;background:white;border-color:orange;z-index:10;margin:0;'>
     <div class='ui segment'>
       <div class='ui fluid transparent input' style='padding-right:30px;'>
@@ -65,6 +73,7 @@
     </template>
 
   </div>
+  </transition>
 </script>
 
 <script>
@@ -143,6 +152,12 @@
         this.search_clib();
         this.search_flib();
       },
+
+
+      search_flib: function() {
+
+      },
+
 
       search_clib: function() {
         var api = `https://api.cdnjs.com/libraries?search=${this.searchkeyword}&fields=version,author,assets,homepage,description,repository`;

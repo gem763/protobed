@@ -61,7 +61,24 @@
           this.detailed = null;
         },
       }
-    })
+    });
+
+    function import_module(module_id) {
+      $.ajax({
+        type: 'GET',
+        url: '/florence/module/' + module_id + '/tree/',
+        dataType:'json',
+        cache: false,
+        success: function(resp) {
+          console.log(resp.tree);
+        },
+        error: function(xhr, errmsg, err) {
+          console.log(xhr.status + ': ' + xhr.responseText);
+          spinner.stop();
+        },
+        complete: function() {}
+      });
+    }
   </script>
   {% endverbatim %}
 {% endblock js %}
