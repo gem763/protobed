@@ -7,26 +7,25 @@
 {% endblock css %}
 
 
-<!-- @deactivate='onsearch=!onsearch' -->
-<!-- https://stackoverflow.com/questions/36170425/detect-click-outside-element -->
 {% block mastbody %}
-<div class="ui center aligned vertical segment" style="background:none;border:none;height:300px;">
+<div class="ui center aligned vertical segment" style="background:none;border:none;min-height:500px;">
   <div class='ui text container'>
     {% verbatim %}
     <div id="importview" style='position:relative;'>
       <libsearchview
         :active='onsearch'
-        @import_lib='import_lib($event)'
+        :imported='imported'
+        @deactivate='onsearch=false'
       ></libsearchview>
 
       <importlistview
-        :items='imported'
-        @click.native='onsearch=true'
+        :imported='imported'
+        @activate_search='onsearch=true'
         @show_detail='show_detail($event)'
       ></importlistview>
 
       <libview
-        :item='imported[detailed]'
+        :imp='imported[detailed]'
         @hide_detail='hide_detail'
       ></libview>
     </div>
@@ -50,19 +49,10 @@
       data: {
         imported: [],
         detailed: null,
-        onsearch: false,
-        spinner: new Spinner(),
+        onsearch: false
       },
 
       methods: {
-        spinner_start: function() {
-          this.spinner.spin(document.body);
-        },
-
-        spinner_stop: function() {
-          this.spinner.stop();
-        },
-
         show_detail: function(index) {
           this.detailed = index;
         },
@@ -70,67 +60,6 @@
         hide_detail: function() {
           this.detailed = null;
         },
-
-        has: function(alias) {
-          for (let imp of this.imported) {
-            if (imp.alias==alias) {
-              console.log('alias duplicated');
-              return true;
-            }
-          }
-          return false;
-        },
-
-        // guess_alias: function(url) {
-        //   let name = url.split('/').slice(-1)[0];
-        //   var pattern = /[^(.a-zA-Z)]/gi;
-        //
-        //   if (pattern.test(name))
-        //     name = name.replace(pattern, '');
-        //
-        //   for (let n of name.split('.')) {
-        //     if (n!='js' && n!='min' && n!='bundled')
-        //       return n;
-        //   }
-        //   return 'tmp'
-        // },
-        //
-        // import_library: function(keyword) {
-        //   if (keyword.startsWith('http')) {
-        //       let alias = this.guess_alias(keyword);
-        //       this.import_clibrary(keyword, alias);
-        //
-        //   } else {}
-        // },
-
-        import_lib: function(item) {
-          this.import_clib(item.latest, item.name)
-        },
-
-        import_flibrary: function(flid, alias) {
-          console.log('test');
-        },
-
-        import_clib: function(url, alias) {
-          if (this.has(alias)) return;
-
-          var importview = this;
-          importview.spinner_start();
-
-          fetch(url)
-            .then(x => x.text())
-            .then(function(code) {
-              importview.imported.push({
-                alias: alias,
-                name: url.split('/').slice(-1)[0],
-                code: code
-              });
-
-              importview.onsearch = false;
-              importview.spinner_stop();
-            }
-          );
-        }
       }
     })
   </script>

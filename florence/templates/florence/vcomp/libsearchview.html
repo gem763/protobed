@@ -9,14 +9,10 @@
 
 {% verbatim %}
 <script type='text/x-template' id='libsearchview-template'>
-  <div v-if='active' class='ui segments' style='position:absolute;top:0;left:0;width:100%;box-shadow:none;background:white;border-color:orange;z-index:10;margin:0;'>
+  <div v-if='active' class='ui segments' @mousedown.prevent style='position:absolute;top:0;left:0;width:100%;box-shadow:none;background:white;border-color:orange;z-index:10;margin:0;'>
     <div class='ui segment'>
-      <div class='ui fluid transparent input' style='padding-left:30px;padding-right:30px;'>
-        <input ref='input' v-model='searchkeyword' class="prompt" type="text" style='font-weight:bold;background:lightblue;' spellcheck="false">
-      </div>
-
-      <div class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;left:5px;transform:translateY(-50%);'>
-        <i class="material-icons">search</i>
+      <div class='ui fluid transparent input' style='padding-right:30px;'>
+        <input ref='input' v-model='searchkeyword' @blur='$emit("deactivate")' class="prompt" type="text" style='font-weight:bold;background:lightblue;' spellcheck="false">
       </div>
 
       <transition name='searchkeyword-clear'>
@@ -26,26 +22,45 @@
       </transition>
     </div>
 
-    <template class="searchresults">
-      <div v-for='item in searched.clib' class='ui left aligned segment' style='padding-right:50px;'>
-        <span style='font-weight:bold;font-size:20px;'>{{ item.name }}</span>
+    <template v-if='searchkeyword.length > 2'>
+      <div v-for='lib in searched.clib' class='ui left aligned segment' style='padding-right:50px;'>
+        <span style='font-weight:bold;font-size:20px;'>{{ lib.name }}</span>
         <div class='ui compact mini button' style='font-size:10px;margin-left:5px;padding:5px;transform:translateY(-3px)'>
-          {{ item.version }}
+          {{ lib.version }}
         </div>
 
-        <div style='font-size:12px;'>{{ item.description }}</div>
-        <div style='font-size:12px;color:silver;'>{{ item.latest }}</div>
+        <div style='font-size:12px;'>{{ lib.description }}</div>
+        <div style='font-size:12px;color:silver;'>{{ lib.url }}</div>
 
-        <div class='ui icon compact button' @click='$emit("import_lib", item)' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);'>
+        <div v-if='has({url:lib.url})' class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);color:orange;'>
+          <i class="material-icons">check</i>
+        </div>
+        <div v-else class='ui icon compact button' @click='import_lib(lib)' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);'>
           <i class="material-icons">add</i>
         </div>
       </div>
 
-      <div v-for='item in searched.flib' class='ui left aligned segment' style='padding-right:30px;'>
+      <div v-for='lib in searched.flib' class='ui left aligned segment' style='padding-right:30px;'>
       </div>
 
-      <div v-if='!searched.clib && !searched.flib' class='ui segment' style='padding:10px;color:black;'>
-        Type keywords of js library to import
+      <div v-if='searched.clib.length==0 && searched.flib.length==0' class='ui segment' style='padding:10px;'>
+        <p style='background:none;margin-bottom:0;'>
+          <i class="material-icons-outlined" style='font-size:40px;'>priority_high</i>
+        </p>
+        <p style='background:none;'>
+          No matching library
+        </p>
+      </div>
+    </template>
+
+    <template v-else>
+      <div class='ui segment' style='padding:10px;color:black;'>
+        <p style='background:none;margin-bottom:0;'>
+          <i class="material-icons-outlined" style='font-size:40px;'>search</i>
+        </p>
+        <p style='background:none;'>
+          Please type keywords of js library to import
+        </p>
       </div>
     </template>
 
@@ -53,30 +68,31 @@
 </script>
 
 <script>
-  Vue.directive('click-outside', {
-    bind: function (el, binding, vnode) {
-      this.event = function (event) {
-        if (!(el == event.target || el.contains(event.target))) {
-          vnode.context[binding.expression](event);
-        }
-      };
-      document.body.addEventListener('click', this.event)
-    },
-    unbind: function (el) {
-      document.body.removeEventListener('click', this.event)
-    },
-  });
+  // Vue.directive('click-outside', {
+  //   bind: function (el, binding, vnode) {
+  //     this.event = function (event) {
+  //       if (!(el == event.target || el.contains(event.target))) {
+  //         vnode.context[binding.expression](event);
+  //       }
+  //     };
+  //     document.body.addEventListener('click', this.event)
+  //   },
+  //   unbind: function (el) {
+  //     document.body.removeEventListener('click', this.event)
+  //   },
+  // });
 
   Vue.component('libsearchview', {
     template: '#libsearchview-template',
-    props: ['active'],
+    props: ['active', 'imported'],
 
     data: function() {
       return {
+        spinner: new Spinner(),
         searchkeyword: '',
         searched: {
-          clib: null,
-          flib: null
+          clib: [],
+          flib: []
         }
       }
     },
@@ -87,70 +103,130 @@
           var libsearchview = this
           this.$nextTick(function() {
             libsearchview.$refs.input.focus();
-            // setTimeout(function() {
-            //   libsearchview.$refs.input.focus();
-            // }, 0);
           });
 
-          // this.searchkeyword = '';
         } else {
-          // this.$refs.input.blur();
+          this.searchkeyword = '';
         }
       },
 
       searchkeyword: function(newKeyword, oldKeyword) {
-        if (newKeyword.trim().length > 2) {
+        var newKeyword_trim = newKeyword.trim();
+
+        if (newKeyword_trim.length == 0) {
+          this.searchkeyword = '';
+
+        } else if (newKeyword_trim.length > 2) {
           this.debouncedSearch();
 
         } else {
-          this.searched.clib = null;
+          this.searched.clib = [];
+          this.searched.flib = [];
         }
       }
     },
 
-    computed: {
-      // libsearchview_style: function() {
-      //   if (this.focused || this.searched.clib || this.searched.lib) {
-      //     return {
-      //       background: 'white',
-      //       border: '1px solid orange'
-      //     }
-      //
-      //   } else {
-      //     return {
-      //       background: 'whitesmoke',
-      //       border: '1px solid whitesmoke'
-      //     }
-      //   }
-      // }
-    },
-
     created: function() {
-      this.debouncedSearch = _.debounce(this.search, 500);
+      this.debouncedSearch = _.debounce(this.search_lib, 500);
     },
 
     methods: {
-      // test: function() {
-      //   this.$emit('deactivate');
-      // },
+      spinner_start: function() {
+        this.spinner.spin(document.body);
+      },
 
-      search: function() {
+      spinner_stop: function() {
+        this.spinner.stop();
+      },
+
+      search_lib: function() {
         this.search_clib();
         this.search_flib();
       },
 
       search_clib: function() {
-        var api = `https://api.cdnjs.com/libraries?search=${this.searchkeyword}&fields=version,description,author`
+        var api = `https://api.cdnjs.com/libraries?search=${this.searchkeyword}&fields=version,author,assets,homepage,description,repository`;
+        var libsearchview = this;
+
+        // fetch(api)
+        //   .then(x => x.json())
+        //   .then(js => {
+        //     libsearchview.searched.clib = js.results.splice(0, 3);
+        //   });
+
         fetch(api)
           .then(x => x.json())
-          .then(js => {
-            this.searched.clib = js.results.splice(0, 3);
+          .then(js => js.results.splice(0, 3))
+          .then(results => {
+            libsearchview.searched.clib = results.map((result) => {
+              return libsearchview.clib_fetch_mapper(result);
+            });
           });
       },
 
+      clib_fetch_mapper: function({latest, assets, repository, ...etc}) {
+        return {
+            ...etc,
+            url: latest,
+            repository: repository.url,
+            release: assets.splice(0, 5).map(asset => asset.version)
+        }
+      },
+
       search_flib: function() {
-        console.log('search lib in florence');
-      }
+        // console.log('search lib in florence');
+      },
+
+
+      import_lib: function(lib) {
+        this.import_clib(lib)
+      },
+
+
+      has: function(obj) {
+        return _.some(this.imported, obj)
+      },
+
+      guess_alias_from_name: function(name) {
+        var alias = 'tmp';
+        var pattern = /[^(a-zA-Z)]/gi;
+
+        var i = 1;
+        for (var cand of name.split(pattern)) {
+          if (cand!='') {
+            alias = cand;
+            while (this.has({alias:alias})) {
+              alias = cand + ('_' + i++)
+            }
+            return alias
+          }
+        }
+
+        return alias;
+      },
+
+      import_clib: function(lib) {
+        var libsearchview = this;
+        libsearchview.spinner_start();
+
+        fetch(lib.url)
+          .then(x => x.text())
+          .then(function(code) {
+            libsearchview.imported.push({
+              alias: libsearchview.guess_alias_from_name(lib.name),
+              name: lib.name + ' ' + lib.version,
+              // fname: lib.latest.split('/').slice(-1)[0],
+              url: lib.url,
+              code: code
+            });
+
+            libsearchview.$emit('deactivate');
+            libsearchview.spinner_stop();
+          }
+        );
+      },
+
+
     }
   });
 </script>
