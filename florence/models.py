@@ -18,6 +18,36 @@ class User(AbstractEmailUser, BigIdAbstract):
         return self.email
 
 
+class Lib(BigIdAbstract):
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=200, blank=False, null=False)
+    version = models.FloatField(default=0)
+    description = models.TextField(null=True, blank=True)
+    keywords = models.TextField(max_length=500, null=True, blank=True)
+
+    credit = models.IntegerField(default=0)
+    nlike = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name + ' | ' + self.author.email
+
+
+class LocalLib(Lib):
+    published = models.BooleanField(default=False)
+    code = models.TextField(null=False, blank=False)
+    exports = models.TextField(max_length=500, null=True, blank=True)
+
+    def __str__(self):
+        if self.published:
+            return '[published] ' + super().__str__()
+
+        else:
+            return super().__str__()
+
+class CdnLib(Lib):
+    url = models.URLField(max_length=300, blank=False, null=False)
+
 
 class Module(BigIdAbstract):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -41,7 +71,16 @@ class Module(BigIdAbstract):
             return disp
 
 
-class Import(BigIdAbstract):
+# class Import(BigIdAbstract):
+#     lib = models.ForeignKey(Lib, on_delete=models.CASCADE)
+#     alias = models.CharField(max_length=100, blank=True, null=True)
+#     on = models.ForeignKey(Lib, on_delete=models.CASCADE, related_name='imports')
+#
+#     def __str__(self):
+#         return str(self.on) + ' | ' + self.alias
+
+
+class Import2(BigIdAbstract):
     on = models.ForeignKey(Module, on_delete=models.CASCADE)
     alias = models.CharField(max_length=100, blank=True, null=True)
 
@@ -61,8 +100,8 @@ class Import(BigIdAbstract):
     def __str__(self):
         return str(self.on) + ' | ' + self.alias
 
-class ModuleImport(Import):
-    module = models.ForeignKey(Module, on_delete=models.CASCADE)
-
-class UrlImport(Import):
-    url = models.URLField(max_length=300, blank=False, null=False)
+# class ModuleImport(Import):
+#     module = models.ForeignKey(Module, on_delete=models.CASCADE)
+#
+# class UrlImport(Import):
+#     url = models.URLField(max_length=300, blank=False, null=False)
