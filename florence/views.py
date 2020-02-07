@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from florence.models import Module, User
+from florence.models import User, Lib, Intlib
 import json
 
 # Create your views here.
@@ -20,19 +20,19 @@ def develop(request):
 def my(request):
     return render(request, 'florence/my.html')
 
-def getcode(request):
-    modulekey = request.GET.get('modulekey', None)
-
-    try:
-        _modulekey = modulekey.split(':')
-        user_email = _modulekey[1]
-        module_name = _modulekey[2]
-        print(user_email, module_name)
-        module = Module.objects.get(author__email=user_email, name=module_name)
-        return JsonResponse({'success':True, 'code':module.code}, safe=False)
-
-    except:
-        return JsonResponse({'success':False}, safe=False)
+# def getcode(request):
+#     modulekey = request.GET.get('modulekey', None)
+#
+#     try:
+#         _modulekey = modulekey.split(':')
+#         user_email = _modulekey[1]
+#         module_name = _modulekey[2]
+#         print(user_email, module_name)
+#         module = Module.objects.get(author__email=user_email, name=module_name)
+#         return JsonResponse({'success':True, 'code':module.code}, safe=False)
+#
+#     except:
+#         return JsonResponse({'success':False}, safe=False)
 
 
 def treefy(mod):
@@ -65,19 +65,29 @@ def import_module(request, pk, alias):
     return render(request, 'florence/import_module.html', {'module':mod})
 
 
-def get_imported(request):
-    # module_id = request.POST.get('module_id', None)
-    # url = request.POST.get('url', None)
-    #alias = request.POST.get('alias', None)
-    imported = json.loads(request.POST.get('imported', None))
-    # print(imported)
-    #
-    # if (module is not None) and (url is None):
-    #     imported = Module.objects.get(pk=module_id)
-    #     imported.type = 'module'
-    #
-    # elif (module is None) and (url is not None):
-    #     imported.type = 'url'
-    #
-    # imported.alias = alias
-    return render(request, 'florence/imported.html', {'imported':imported})
+def familize(intlib):
+    imports = {}
+    for imp in intlib.imports.all():
+        if imp.lib.typeof=='intlib':
+            imports[imp.alias] = familize(imp.lib.intlib)
+        elif imp.lib.typeof=='extlib':
+            imports[imp.alias] = imp.lib.extlib.url
+
+    return {
+        'imports': imports,
+        'code': intlib.code,
+        'author': intlib.author.email,
+        'author_avatar': intlib.author.socialaccount_set.all()[0].get_avatar_url(),
+        'name': intlib.name,
+        'description': intlib.description,
+        'exports': [exp.strip() for exp in intlib.exports.split(',')]
+    }
+
+
+def lib_family(request, pk):
+    lib = Intlib.objects.get(pk=pk)
+    return JsonResponse({'success':True, 'family':familize(lib)}, safe=False)
+
+# def get_imported(request):
+#     imported = json.loads(request.POST.get('imported', None))
+#     return render(request, 'florence/imported.html', {'imported':imported})

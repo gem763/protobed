@@ -66,11 +66,11 @@
     function import_module(module_id) {
       $.ajax({
         type: 'GET',
-        url: '/florence/module/' + module_id + '/tree/',
+        url: '/florence/lib/' + module_id + '/family/',
         dataType:'json',
         cache: false,
         success: function(resp) {
-          console.log(resp.tree);
+          console.log(resp.family);
         },
         error: function(xhr, errmsg, err) {
           console.log(xhr.status + ': ' + xhr.responseText);

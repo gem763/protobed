@@ -14,67 +14,76 @@
   }
 </style>
 
+
 {% verbatim %}
 <script type='text/x-template' id='libsearchview-template'>
   <transition name='libsearchview-show'>
-  <div v-if='active' class='ui segments' @mousedown.prevent style='position:absolute;top:0;left:0;width:100%;box-shadow:none;background:white;border-color:orange;z-index:10;margin:0;'>
-    <div class='ui segment'>
-      <div class='ui fluid transparent input' style='padding-right:30px;'>
-        <input ref='input' v-model='searchkeyword' @blur='$emit("deactivate")' class="prompt" type="text" style='font-weight:bold;background:lightblue;' spellcheck="false">
+    <div v-if='active' @mousedown.prevent style='position:absolute;top:0;left:0;width:100%;z-index:10;'>
+      <div class='ui segments' style='box-shadow:none;background:white;border-color:orange;margin:0;'>
+        <div class='ui segment'>
+          <div class='ui fluid transparent input' style='padding-right:30px;'>
+            <input ref='input' v-model='searchkeyword' @blur='$emit("deactivate")' class="prompt" type="text" style='font-weight:bold;background:lightblue;' spellcheck="false">
+          </div>
+
+          <transition name='searchkeyword-clear'>
+            <div v-if='searchkeyword' class='ui icon button' @click='searchkeyword=""' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);'>
+              <i class="times circle icon" style='vertical-align:middle;'></i>
+            </div>
+          </transition>
+        </div>
+
+        <template v-if='searchkeyword.length > 2'>
+          <div v-for='lib in searched.clib' class='ui left aligned segment' style='padding-right:50px;'>
+            <span style='font-weight:bold;font-size:20px;'>{{ lib.name }}</span>
+            <div class='ui compact mini button' style='font-size:10px;margin-left:5px;padding:5px;transform:translateY(-3px)'>
+              {{ lib.version }}
+            </div>
+
+            <div style='font-size:12px;'>{{ lib.description }}</div>
+            <div style='font-size:12px;color:silver;word-wrap:break-word;'>{{ lib.url }}</div>
+
+            <div v-if='has({url:lib.url})' class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);color:orange;'>
+              <i class="material-icons">check</i>
+            </div>
+            <div v-else class='ui icon compact button' @click='import_lib(lib)' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);'>
+              <i class="material-icons">add</i>
+            </div>
+          </div>
+
+          <div v-for='lib in searched.flib' class='ui left aligned segment' style='padding-right:30px;'>
+          </div>
+
+          <div v-if='searched.clib.length==0 && searched.flib.length==0' class='ui segment' style='padding:10px;'>
+            <p style='background:none;margin-bottom:0;'>
+              <i class="material-icons-outlined" style='font-size:40px;'>priority_high</i>
+            </p>
+            <p style='background:none;'>
+              No matching library
+            </p>
+          </div>
+        </template>
+
+        <template v-else>
+          <div class='ui segment' style='padding:10px;color:black;'>
+            <p style='background:none;margin-bottom:0;'>
+              <i class="material-icons-outlined" style='font-size:40px;'>search</i>
+            </p>
+            <p style='background:none;'>
+              Please type keywords of js library to import
+            </p>
+          </div>
+        </template>
+
       </div>
 
-      <transition name='searchkeyword-clear'>
-        <div v-if='searchkeyword' class='ui icon compact button' @click='searchkeyword=""' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);'>
-          <i class="material-icons">close</i>
-        </div>
-      </transition>
+      <div class='ui icon compact right floated button' @click='$emit("deactivate")' style='width:40px;height:40px;background:none;'>
+        <i class="material-icons">close</i>
+      </div>
+
     </div>
-
-    <template v-if='searchkeyword.length > 2'>
-      <div v-for='lib in searched.clib' class='ui left aligned segment' style='padding-right:50px;'>
-        <span style='font-weight:bold;font-size:20px;'>{{ lib.name }}</span>
-        <div class='ui compact mini button' style='font-size:10px;margin-left:5px;padding:5px;transform:translateY(-3px)'>
-          {{ lib.version }}
-        </div>
-
-        <div style='font-size:12px;'>{{ lib.description }}</div>
-        <div style='font-size:12px;color:silver;'>{{ lib.url }}</div>
-
-        <div v-if='has({url:lib.url})' class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);color:orange;'>
-          <i class="material-icons">check</i>
-        </div>
-        <div v-else class='ui icon compact button' @click='import_lib(lib)' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);'>
-          <i class="material-icons">add</i>
-        </div>
-      </div>
-
-      <div v-for='lib in searched.flib' class='ui left aligned segment' style='padding-right:30px;'>
-      </div>
-
-      <div v-if='searched.clib.length==0 && searched.flib.length==0' class='ui segment' style='padding:10px;'>
-        <p style='background:none;margin-bottom:0;'>
-          <i class="material-icons-outlined" style='font-size:40px;'>priority_high</i>
-        </p>
-        <p style='background:none;'>
-          No matching library
-        </p>
-      </div>
-    </template>
-
-    <template v-else>
-      <div class='ui segment' style='padding:10px;color:black;'>
-        <p style='background:none;margin-bottom:0;'>
-          <i class="material-icons-outlined" style='font-size:40px;'>search</i>
-        </p>
-        <p style='background:none;'>
-          Please type keywords of js library to import
-        </p>
-      </div>
-    </template>
-
-  </div>
   </transition>
 </script>
+
 
 <script>
   // Vue.directive('click-outside', {
@@ -160,7 +169,9 @@
 
 
       search_clib: function() {
-        var api = `https://api.cdnjs.com/libraries?search=${this.searchkeyword}&fields=version,author,assets,homepage,description,repository`;
+        // var api = `https://api.cdnjs.com/libraries?search=${this.searchkeyword}&fields=version,author,assets,homepage,description,repository`;
+        // 이제 assets는 특정 lib를 지정할때만 가능한듯: 2020.02.07
+        var api = `https://api.cdnjs.com/libraries?search=${this.searchkeyword}&fields=version,author,homepage,description,repository`;
         var libsearchview = this;
 
         // fetch(api)
@@ -179,12 +190,12 @@
           });
       },
 
-      clib_fetch_mapper: function({latest, assets, repository, ...etc}) {
+      clib_fetch_mapper: function({latest, repository, ...etc}) {
         return {
             ...etc,
             url: latest,
-            repository: repository.url,
-            release: assets.splice(0, 5).map(asset => asset.version)
+            repo: repository.url,
+            // release: assets.splice(0, 5).map(asset => asset.version)
         }
       },
 
