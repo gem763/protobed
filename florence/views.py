@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from florence.models import User, Lib, Intlib
+from django.core import serializers
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 import json
 
 # Create your views here.
@@ -86,7 +88,25 @@ def familize(intlib):
 
 def lib_family(request, pk):
     lib = Intlib.objects.get(pk=pk)
+    # ser = serializers.serialize('python', [lib], use_natural_foreign_keys=True)
     return JsonResponse({'success':True, 'family':familize(lib)}, safe=False)
+
+
+def lib_saerch(request):
+    n = 3
+    q = request.GET.get('q', None)
+
+    try:
+        vector = SearchVector('code', 'description', 'keywords')
+        query = SearchQuery(q)
+        res = Intlib.objects.annotate(rank=SearchRank(vector, query)).order_by('-rank')[:n]
+        res = list(res.values('name', 'author__email', 'description'))
+        return JsonResponse({'result':res}, safe=False)
+
+    except:
+        return JsonResponse({'result':[]}, safe=False)
+
+# socialaccount_set.all()[0].get_avatar_url()
 
 # def get_imported(request):
 #     imported = json.loads(request.POST.get('imported', None))

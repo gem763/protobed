@@ -71,6 +71,7 @@
         cache: false,
         success: function(resp) {
           console.log(resp.family);
+          console.log(modulize(resp.family));
         },
         error: function(xhr, errmsg, err) {
           console.log(xhr.status + ': ' + xhr.responseText);
@@ -78,6 +79,37 @@
         },
         complete: function() {}
       });
+    }
+
+
+    function modulize(tree) {
+      let modulized;
+      //let exps = _.fromPairs(_.zip(tree.exports, tree.exports));
+      let exps = tree.exports.map(exp => exp + ':' + exp).join(', ');
+
+      if (jQuery.isEmptyObject(tree.imports)) {
+        modulized = `define(function(){
+          ${tree.code}
+          return { ${exps} }
+        })`;
+
+      } else {
+        let _imports = math.transpose(Object.entries(tree.imports));
+        let _modulized = _imports[1].map(function(imp) {
+          if (typeof imp === 'string') {
+            return imp;
+          } else {
+            return modulize(imp);
+          }
+        });
+        modulized = `define(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
+          ${tree.code}
+          return { ${exps} }
+        })`
+      }
+
+      let blob = new Blob([modulized], {type: 'text/javascript'});
+      return URL.createObjectURL(blob);
     }
   </script>
   {% endverbatim %}

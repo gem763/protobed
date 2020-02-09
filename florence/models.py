@@ -1,6 +1,6 @@
 from django.db import models
 from custom_user.models import AbstractEmailUser
-
+from model_utils.managers import InheritanceManager
 # Create your models here.
 
 
@@ -28,6 +28,8 @@ class Lib(BigIdAbstract):
     credit = models.IntegerField(default=0)
     nlike = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = InheritanceManager() #https://dgkim5360.tistory.com/entry/django-model-inheritance
 
     def cast(self):
         for subclass in self.__class__.__subclasses__():

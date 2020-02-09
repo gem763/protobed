@@ -16,4 +16,5 @@ urlpatterns = [
 
     path('my/', v.my, name='my'),
     path('lib/<int:pk>/family/', v.lib_family, name='lib_family'),
+    path('lib/search/', v.lib_saerch, name='lib_search'),
 ]

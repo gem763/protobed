@@ -50,7 +50,21 @@
             </div>
           </div>
 
-          <div v-for='lib in searched.flib' class='ui left aligned segment' style='padding-right:30px;'>
+          <div v-for='lib in searched.flib' class='ui left aligned segment' style='padding-right:50px;'>
+            <span style='font-weight:bold;font-size:20px;'>{{ lib.name }}</span>
+            <div v-if='lib.version' class='ui compact mini button' style='font-size:10px;margin-left:5px;padding:5px;transform:translateY(-3px)'>
+              {{ lib.version }}
+            </div>
+
+            <div style='font-size:12px;'>{{ lib.description }}</div>
+            <div v-if='lib.url' style='font-size:12px;color:silver;word-wrap:break-word;'>{{ lib.url }}</div>
+
+            <div v-if='has({url:lib.url})' class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);color:orange;'>
+              <i class="material-icons">check</i>
+            </div>
+            <div v-else class='ui icon compact button' @click='import_lib(lib)' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);'>
+              <i class="material-icons">add</i>
+            </div>
           </div>
 
           <div v-if='searched.clib.length==0 && searched.flib.length==0' class='ui segment' style='padding:10px;'>
@@ -164,7 +178,14 @@
 
 
       search_flib: function() {
+        let api = `/florence/lib/search?q=${this.searchkeyword}`;
+        let libsearchview = this;
 
+        fetch(api)
+          .then(x => x.json())
+          .then(js => {
+            libsearchview.searched.flib = js.result;
+          });
       },
 
 
@@ -197,10 +218,6 @@
             repo: repository.url,
             // release: assets.splice(0, 5).map(asset => asset.version)
         }
-      },
-
-      search_flib: function() {
-        // console.log('search lib in florence');
       },
 
 
