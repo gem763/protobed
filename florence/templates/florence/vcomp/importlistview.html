@@ -12,23 +12,33 @@
     </div>
 
     <template v-if='show'>
-      <template v-if='imported.length'>
-        <div v-for='(imp, index) in imported' @click='$emit("show_detail", index)' :key='index' class='ui left aligned segment' style='background:none;padding:10px;padding-left:20px;padding-right:50px;'>
-          <div><strong>{{ imp.name }}</strong></div>
-
-          <div class='ui black compact small icon button' style='position:absolute;top:50%;right:40px;transform:translateY(-50%);'>
-            <span style='font-weight:normal;color:silver;margin-right:10px;'>as</span>{{ imp.alias }}
-          </div>
-
-          <i class="material-icons" @click.stop='imported.splice(index, 1)' style='position:absolute;top:50%;right:8px;transform:translateY(-50%);cursor:pointer;'>close</i>
+      <div v-for='(imp, alias) in imported' @click='$emit("show_detail", alias)' :key='alias' class='ui left aligned segment' style='background:none;padding:10px;padding-left:20px;padding-right:50px;'>
+        <div><strong>{{ imp.name }}</strong></div>
+        <div class='ui black compact small icon button' style='position:absolute;top:50%;right:40px;transform:translateY(-50%);'>
+          <span style='font-weight:normal;color:silver;margin-right:10px;'>as</span>{{ alias }}
         </div>
-      </template>
-      <div v-else key='none' class='ui segment' style='background:none;padding:10px;color:black'>
+        <i class="material-icons" @click.stop='$delete(imported,alias)' style='position:absolute;top:50%;right:8px;transform:translateY(-50%);cursor:pointer;'>close</i>
+      </div>
+
+      <div v-if='_.isEmpty(imported)' key='none' class='ui segment' style='background:none;padding:10px;color:black'>
         No library imported
       </div>
     </template>
   </div>
 </script>
+
+<!-- <template v-if='show'>
+  <template v-if='imported.length'>
+    <div v-for='(imp, index) in imported' @click='$emit("show_detail", index)' :key='index' class='ui left aligned segment' style='background:none;padding:10px;padding-left:20px;padding-right:50px;'>
+      <div><strong>{{ imp.name }}</strong></div>
+
+      <div class='ui black compact small icon button' style='position:absolute;top:50%;right:40px;transform:translateY(-50%);'>
+        <span style='font-weight:normal;color:silver;margin-right:10px;'>as</span>{{ imp.alias }}
+      </div>
+
+      <i class="material-icons" @click.stop='imported.splice(index, 1)' style='position:absolute;top:50%;right:8px;transform:translateY(-50%);cursor:pointer;'>close</i>
+    </div>
+  </template> -->
 
 <script>
   Vue.component('importlistview', {

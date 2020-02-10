@@ -11,7 +11,10 @@
 <div class="ui center aligned vertical segment" style="background:none;border:none;min-height:500px;">
   <div class='ui text container'>
     {% verbatim %}
-    <div id="importview" style='position:relative;'>
+    <div id='module'>
+      <importview></importview>
+    </div>
+    <!-- <div id="importview" style='position:relative;'>
       <libsearchview
         :active='onsearch'
         :imported='imported'
@@ -25,10 +28,10 @@
       ></importlistview>
 
       <libview
-        :imp='imported[detailed]'
+        :imp='imported[selected]'
         @hide_detail='hide_detail'
       ></libview>
-    </div>
+    </div> -->
     {% endverbatim %}
   </div>
 </div>
@@ -37,79 +40,62 @@
 
 {% block js %}
   {{ block.super }}
-  {% include "florence/vcomp/importlistview.html" %}
+  {% include "florence/vcomp/importview.html" %}
   {% include "florence/vcomp/libview.html" %}
-  {% include "florence/vcomp/libsearchview.html" %}
 
   {% verbatim %}
   <script>
     var importview = new Vue({
-      el: '#importview',
-
-      data: {
-        imported: [],
-        detailed: null,
-        onsearch: false
-      },
-
-      methods: {
-        show_detail: function(index) {
-          this.detailed = index;
-        },
-
-        hide_detail: function() {
-          this.detailed = null;
-        },
-      }
+      el: '#module'
     });
 
-    function import_module(module_id) {
-      $.ajax({
-        type: 'GET',
-        url: '/florence/lib/' + module_id + '/family/',
-        dataType:'json',
-        cache: false,
-        success: function(resp) {
-          console.log(resp.family);
-          console.log(modulize(resp.family));
-        },
-        error: function(xhr, errmsg, err) {
-          console.log(xhr.status + ': ' + xhr.responseText);
-        },
-        complete: function() {}
-      });
-    }
-
-
-    function modulize(tree) {
-      let modulized;
-      //let exps = _.fromPairs(_.zip(tree.exports, tree.exports));
-      let exps = tree.exports.map(exp => exp + ':' + exp).join(', ');
-
-      if (jQuery.isEmptyObject(tree.imports)) {
-        modulized = `define(function(){
-          ${tree.code}
-          return { ${exps} }
-        })`;
-
-      } else {
-        let _imports = math.transpose(Object.entries(tree.imports));
-        let _modulized = _imports[1].map(function(imp) {
-          if (typeof imp === 'string') {
-            return imp;
-          } else {
-            return modulize(imp);
-          }
-        });
-        modulized = `define(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
-          ${tree.code}
-          return { ${exps} }
-        })`
-      }
-
-      let blob = new Blob([modulized], {type: 'text/javascript'});
-      return URL.createObjectURL(blob);
-    }
+    // function import_module(module_id) {
+    //   $.ajax({
+    //     type: 'GET',
+    //     url: '/florence/lib/' + module_id + '/family/',
+    //     dataType:'json',
+    //     cache: false,
+    //     success: function(resp) {
+    //       console.log(resp.family);
+    //       console.log(modulize(resp.family));
+    //     },
+    //     error: function(xhr, errmsg, err) {
+    //       console.log(xhr.status + ': ' + xhr.responseText);
+    //     },
+    //     complete: function() {}
+    //   });
+    // }
+    //
+    //
+    // function modulize(tree) {
+    //   let modulized;
+    //   //let exps = _.fromPairs(_.zip(tree.exports, tree.exports));
+    //   let exps = tree.exports.map(exp => exp + ':' + exp).join(', ');
+    //
+    //   if (jQuery.isEmptyObject(tree.imports)) {
+    //     modulized = `define(function(){
+    //       ${tree.code}
+    //       return { ${exps} }
+    //     })`;
+    //
+    //   } else {
+    //     let _imports = math.transpose(Object.entries(tree.imports));
+    //     let _modulized = _imports[1].map(function(imp) {
+    //       if (typeof imp === 'string') {
+    //         return imp;
+    //       } else {
+    //         return modulize(imp);
+    //       }
+    //     });
+    //     modulized = `define(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
+    //       ${tree.code}
+    //       return { ${exps} }
+    //     })`
+    //   }
+    //
+    //   let blob = new Blob([modulized], {type: 'text/javascript'});
+    //   return URL.createObjectURL(blob);
+    // }
   </script>
   {% endverbatim %}
 {% endblock js %}

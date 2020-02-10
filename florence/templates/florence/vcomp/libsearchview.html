@@ -89,10 +89,10 @@
             <div class='content'>{{ lib.description }}</div>
             <div v-if='lib.url' class='content' style='color:silver;'>{{ lib.url }}</div>
 
-            <div v-if='has({url:lib.url})' class='action ui icon compact button' style='color:orange;'>
+            <div v-if='has(lib)' class='action ui icon compact button' style='color:orange;'>
               <i class="material-icons">check</i>
             </div>
-            <div v-else class='action ui icon compact button' @click='import_flib(lib)'>
+            <div v-else class='action ui icon compact button' @click='import_lib(lib)'>
               <i class="material-icons">add</i>
             </div>
           </div>
@@ -237,8 +237,20 @@
       },
 
 
-      has: function(obj) {
-        return _.some(this.imported, obj)
+      // has: function(obj) {
+      //   return _.some(this.imported, obj)
+      // },
+
+      has: function(lib) {
+        if (lib.url) {
+          return _.some(this.imported, {url:lib.url});
+        } else if (lib.id) {
+          return _.some(this.imported, {id:lib.id});
+        }
+      },
+
+      alias_duplicated: function(alias) {
+        return alias in this.imported;
       },
 
       guess_alias_from_name: function(name) {
@@ -249,7 +261,8 @@
         for (var cand of name.split(pattern)) {
           if (cand!='') {
             alias = cand;
-            while (this.has({alias:alias})) {
+            // while (this.has({alias:alias})) {
+            while (this.alias_duplicated(alias)) {
               alias = cand + ('_' + i++)
             }
             return alias
@@ -260,6 +273,14 @@
       },
 
 
+      import_lib: function(lib) {
+        if (lib.url) {
+          this.import_extlib(lib);
+        } else {
+          this.import_intlib(lib);
+        }
+      },
+
       import_intlib: function(lib) {
         let api = `/florence/lib/${lib.id}/family`;
         var libsearchview = this;
@@ -269,7 +290,7 @@
           .then(x => x.json())
           .then(function({family}) {
             let alias = libsearchview.guess_alias_from_name(lib.name)
-            libsearchview.imported.push({ alias: family });
+            Vue.set(libsearchview.imported, alias, family)
             libsearchview.$emit('deactivate');
             libsearchview.spinner_stop();
           });
@@ -283,8 +304,8 @@
         fetch(lib.url)
           .then(x => x.text())
           .then(function(code) {
-            libsearchview.imported.push({
-              alias: libsearchview.guess_alias_from_name(lib.name),
+            let alias = libsearchview.guess_alias_from_name(lib.name)
+            Vue.set(libsearchview.imported, alias, {
               name: lib.name + ' ' + lib.version,
               url: lib.url,
               code: code

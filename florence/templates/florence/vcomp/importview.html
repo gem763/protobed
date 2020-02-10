@@ -1,0 +1,47 @@
+{% include "florence/vcomp/libsearchview.html" %}
+{% include "florence/vcomp/importlistview.html" %}
+
+<script type='text/x-template' id='importview-template'>
+  <div class="importview" style='position:relative;'>
+    <libsearchview 
+      :active='onsearch'
+      :imported='imported'
+      @deactivate='onsearch=false'
+    ></libsearchview>
+
+    <importlistview
+      :imported='imported'
+      @activate_search='onsearch=true'
+      @show_detail='show_detail($event)'
+    ></importlistview>
+
+    <libview
+      :imp='imported[selected]'
+      @hide_detail='hide_detail'
+    ></libview>
+  </div>
+</script>
+
+<script>
+  Vue.component('importview', {
+    template: '#importview-template',
+    delimiters: ['[[', ']]'],
+    data: function() {
+      return {
+        imported: {},
+        selected: null,
+        onsearch: false
+      }
+    },
+
+    methods: {
+      show_detail: function(alias) {
+        this.selected = alias;
+      },
+
+      hide_detail: function() {
+        this.selected = null;
+      },
+    }
+  });
+</script>

@@ -78,6 +78,7 @@ def familize(intlib):
             imports[imp.alias] = imp.lib.extlib.url
 
     return {
+        'id': intlib.pk,
         'imports': imports,
         'code': intlib.code,
         'author': {
