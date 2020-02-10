@@ -12,62 +12,92 @@
   .libsearchview-show-enter, .libsearchview-show-leave-to {
     opacity: 0;
   }
+
+  .libsearchview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+  }
+
+  .libsearchview .segments {
+    box-shadow: none;
+    background: white;
+    border-color: orange;
+    margin: 0;
+  }
+
+  .libsearchview .segment .action {
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    background: none;
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+  }
+
+  .libsearchview .segment .input {
+    padding-right: 30px;
+  }
+
+  .libsearchview .segment .input input {
+    font-weight: bold;
+    background: none;
+  }
+
+  .libsearchview .segment .version {
+    font-size: 10px;
+    margin-left: 5px;
+    padding: 5px;
+    transform: translateY(-3px)
+  }
+
+  .libsearchview .segment .content {
+    font-size: 12px;
+    word-wrap: break-word;
+  }
 </style>
 
 
 {% verbatim %}
 <script type='text/x-template' id='libsearchview-template'>
   <transition name='libsearchview-show'>
-    <div v-if='active' @mousedown.prevent style='position:absolute;top:0;left:0;width:100%;z-index:10;'>
-      <div class='ui segments' style='box-shadow:none;background:white;border-color:orange;margin:0;'>
+    <div v-if='active' @mousedown.prevent class='libsearchview'>
+      <div class='ui segments'>
         <div class='ui segment'>
-          <div class='ui fluid transparent input' style='padding-right:30px;'>
-            <input ref='input' v-model='searchkeyword' @blur='$emit("deactivate")' class="prompt" type="text" style='font-weight:bold;background:lightblue;' spellcheck="false">
+          <div class='search ui fluid transparent input'>
+            <input ref='input' v-model='searchkeyword' @blur='$emit("deactivate")' class="prompt" type="text" spellcheck="false">
           </div>
 
           <transition name='searchkeyword-clear'>
-            <div v-if='searchkeyword' class='ui icon button' @click='searchkeyword=""' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);'>
+            <div v-if='searchkeyword' class='action ui icon button' @click='searchkeyword=""'>
               <i class="times circle icon" style='vertical-align:middle;'></i>
             </div>
           </transition>
         </div>
 
         <template v-if='searchkeyword.length > 2'>
-          <div v-for='lib in searched.clib' class='ui left aligned segment' style='padding-right:50px;'>
+          <div v-for='lib in searched_libs' class='ui left aligned segment' style='padding-right:50px;'>
             <span style='font-weight:bold;font-size:20px;'>{{ lib.name }}</span>
-            <div class='ui compact mini button' style='font-size:10px;margin-left:5px;padding:5px;transform:translateY(-3px)'>
+            <div v-if='lib.version' class='version ui compact mini button'>
               {{ lib.version }}
             </div>
 
-            <div style='font-size:12px;'>{{ lib.description }}</div>
-            <div style='font-size:12px;color:silver;word-wrap:break-word;'>{{ lib.url }}</div>
+            <div class='content'>{{ lib.description }}</div>
+            <div v-if='lib.url' class='content' style='color:silver;'>{{ lib.url }}</div>
 
-            <div v-if='has({url:lib.url})' class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);color:orange;'>
+            <div v-if='has({url:lib.url})' class='action ui icon compact button' style='color:orange;'>
               <i class="material-icons">check</i>
             </div>
-            <div v-else class='ui icon compact button' @click='import_lib(lib)' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);'>
+            <div v-else class='action ui icon compact button' @click='import_flib(lib)'>
               <i class="material-icons">add</i>
             </div>
           </div>
 
-          <div v-for='lib in searched.flib' class='ui left aligned segment' style='padding-right:50px;'>
-            <span style='font-weight:bold;font-size:20px;'>{{ lib.name }}</span>
-            <div v-if='lib.version' class='ui compact mini button' style='font-size:10px;margin-left:5px;padding:5px;transform:translateY(-3px)'>
-              {{ lib.version }}
-            </div>
-
-            <div style='font-size:12px;'>{{ lib.description }}</div>
-            <div v-if='lib.url' style='font-size:12px;color:silver;word-wrap:break-word;'>{{ lib.url }}</div>
-
-            <div v-if='has({url:lib.url})' class='ui icon compact button' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);color:orange;'>
-              <i class="material-icons">check</i>
-            </div>
-            <div v-else class='ui icon compact button' @click='import_lib(lib)' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;right:5px;transform:translateY(-50%);'>
-              <i class="material-icons">add</i>
-            </div>
-          </div>
-
-          <div v-if='searched.clib.length==0 && searched.flib.length==0' class='ui segment' style='padding:10px;'>
+          <div v-if='searched_libs.length==0' class='ui segment' style='padding:10px;'>
             <p style='background:none;margin-bottom:0;'>
               <i class="material-icons-outlined" style='font-size:40px;'>priority_high</i>
             </p>
@@ -100,20 +130,6 @@
 
 
 <script>
-  // Vue.directive('click-outside', {
-  //   bind: function (el, binding, vnode) {
-  //     this.event = function (event) {
-  //       if (!(el == event.target || el.contains(event.target))) {
-  //         vnode.context[binding.expression](event);
-  //       }
-  //     };
-  //     document.body.addEventListener('click', this.event)
-  //   },
-  //   unbind: function (el) {
-  //     document.body.removeEventListener('click', this.event)
-  //   },
-  // });
-
   Vue.component('libsearchview', {
     template: '#libsearchview-template',
     props: ['active', 'imported'],
@@ -123,9 +139,15 @@
         spinner: new Spinner(),
         searchkeyword: '',
         searched: {
-          clib: [],
-          flib: []
+          intlibs: [],
+          extlibs: []
         }
+      }
+    },
+
+    computed: {
+      searched_libs: function() {
+        return this.searched.intlibs.concat(this.searched.extlibs);
       }
     },
 
@@ -152,14 +174,14 @@
           this.debouncedSearch();
 
         } else {
-          this.searched.clib = [];
-          this.searched.flib = [];
+          this.searched.intlibs = [];
+          this.searched.extlibs = [];
         }
       }
     },
 
     created: function() {
-      this.debouncedSearch = _.debounce(this.search_lib, 500);
+      this.debouncedSearch = _.debounce(this.search, 500);
     },
 
     methods: {
@@ -171,58 +193,47 @@
         this.spinner.stop();
       },
 
-      search_lib: function() {
-        this.search_clib();
-        this.search_flib();
+      search: function() {
+        this.search_extlib();
+        this.search_intlib();
       },
 
 
-      search_flib: function() {
+      search_intlib: function() {
         let api = `/florence/lib/search?q=${this.searchkeyword}`;
         let libsearchview = this;
 
         fetch(api)
           .then(x => x.json())
           .then(js => {
-            libsearchview.searched.flib = js.result;
+            libsearchview.searched.intlibs = js.result;
           });
       },
 
 
-      search_clib: function() {
+      search_extlib: function() {
         // var api = `https://api.cdnjs.com/libraries?search=${this.searchkeyword}&fields=version,author,assets,homepage,description,repository`;
         // 이제 assets는 특정 lib를 지정할때만 가능한듯: 2020.02.07
         var api = `https://api.cdnjs.com/libraries?search=${this.searchkeyword}&fields=version,author,homepage,description,repository`;
         var libsearchview = this;
 
-        // fetch(api)
-        //   .then(x => x.json())
-        //   .then(js => {
-        //     libsearchview.searched.clib = js.results.splice(0, 3);
-        //   });
-
         fetch(api)
           .then(x => x.json())
           .then(js => js.results.splice(0, 3))
           .then(results => {
-            libsearchview.searched.clib = results.map((result) => {
-              return libsearchview.clib_fetch_mapper(result);
+            libsearchview.searched.extlibs = results.map((result) => {
+              return libsearchview.extlib_fetch_mapper(result);
             });
           });
       },
 
-      clib_fetch_mapper: function({latest, repository, ...etc}) {
+      extlib_fetch_mapper: function({latest, repository, ...etc}) {
         return {
             ...etc,
             url: latest,
             repo: repository.url,
             // release: assets.splice(0, 5).map(asset => asset.version)
         }
-      },
-
-
-      import_lib: function(lib) {
-        this.import_clib(lib)
       },
 
 
@@ -248,7 +259,24 @@
         return alias;
       },
 
-      import_clib: function(lib) {
+
+      import_intlib: function(lib) {
+        let api = `/florence/lib/${lib.id}/family`;
+        var libsearchview = this;
+        libsearchview.spinner_start();
+
+        fetch(api)
+          .then(x => x.json())
+          .then(function({family}) {
+            let alias = libsearchview.guess_alias_from_name(lib.name)
+            libsearchview.imported.push({ alias: family });
+            libsearchview.$emit('deactivate');
+            libsearchview.spinner_stop();
+          });
+      },
+
+
+      import_extlib: function(lib) {
         var libsearchview = this;
         libsearchview.spinner_start();
 
@@ -258,7 +286,6 @@
             libsearchview.imported.push({
               alias: libsearchview.guess_alias_from_name(lib.name),
               name: lib.name + ' ' + lib.version,
-              // fname: lib.latest.split('/').slice(-1)[0],
               url: lib.url,
               code: code
             });

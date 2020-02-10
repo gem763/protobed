@@ -2,7 +2,9 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from florence.models import User, Lib, Intlib
 from django.core import serializers
+from rest_framework.renderers import JSONRenderer
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from florence.serializers import IntlibSearchSerializer
 import json
 
 # Create your views here.
@@ -37,34 +39,34 @@ def my(request):
 #         return JsonResponse({'success':False}, safe=False)
 
 
-def treefy(mod):
-    imports = {}
-    for imp in mod.import_set.all():
-        if imp.typeof=='moduleimport':
-            imports[imp.alias] = treefy(imp.moduleimport.module)
-        elif imp.typeof=='urlimport':
-            imports[imp.alias] = imp.urlimport.url
-
-    return {
-        'imports': imports,
-        'code': mod.code,
-        'author': mod.author.email,
-        'author_avatar': mod.author.socialaccount_set.all()[0].get_avatar_url(),
-        'name': mod.name,
-        'description': mod.description,
-        'exports': [exp.strip() for exp in mod.exports.split(',')]
-    }
-
-
-def moduletree(request, pk):
-    mod = Module.objects.get(pk=pk)
-    return JsonResponse({'success':True, 'tree':treefy(mod)}, safe=False)
-
-
-def import_module(request, pk, alias):
-    mod = Module.objects.get(pk=pk)
-    mod.alias = alias
-    return render(request, 'florence/import_module.html', {'module':mod})
+# def treefy(mod):
+#     imports = {}
+#     for imp in mod.import_set.all():
+#         if imp.typeof=='moduleimport':
+#             imports[imp.alias] = treefy(imp.moduleimport.module)
+#         elif imp.typeof=='urlimport':
+#             imports[imp.alias] = imp.urlimport.url
+#
+#     return {
+#         'imports': imports,
+#         'code': mod.code,
+#         'author': mod.author.email,
+#         'author_avatar': mod.author.socialaccount_set.all()[0].get_avatar_url(),
+#         'name': mod.name,
+#         'description': mod.description,
+#         'exports': [exp.strip() for exp in mod.exports.split(',')]
+#     }
+#
+#
+# def moduletree(request, pk):
+#     mod = Module.objects.get(pk=pk)
+#     return JsonResponse({'success':True, 'tree':treefy(mod)}, safe=False)
+#
+#
+# def import_module(request, pk, alias):
+#     mod = Module.objects.get(pk=pk)
+#     mod.alias = alias
+#     return render(request, 'florence/import_module.html', {'module':mod})
 
 
 def familize(intlib):
@@ -78,8 +80,10 @@ def familize(intlib):
     return {
         'imports': imports,
         'code': intlib.code,
-        'author': intlib.author.email,
-        'author_avatar': intlib.author.socialaccount_set.all()[0].get_avatar_url(),
+        'author': {
+            'id': intlib.author.pk,
+            'avatar': intlib.author.socialaccount_set.all()[0].get_avatar_url(),
+        },
         'name': intlib.name,
         'description': intlib.description,
         'exports': [exp.strip() for exp in intlib.exports.split(',')]
@@ -89,7 +93,9 @@ def familize(intlib):
 def lib_family(request, pk):
     lib = Intlib.objects.get(pk=pk)
     # ser = serializers.serialize('python', [lib], use_natural_foreign_keys=True)
-    return JsonResponse({'success':True, 'family':familize(lib)}, safe=False)
+
+    # print(JSONRenderer().render(IntlibSerializer(Intlib.objects.all(), many=True).data))
+    return JsonResponse({'family':familize(lib)}, safe=False)
 
 
 def lib_saerch(request):
@@ -99,15 +105,12 @@ def lib_saerch(request):
     try:
         vector = SearchVector('code', 'description', 'keywords')
         query = SearchQuery(q)
-        res = Intlib.objects.annotate(rank=SearchRank(vector, query)).order_by('-rank')[:n]
-        res = list(res.values('name', 'author__email', 'description'))
-        return JsonResponse({'result':res}, safe=False)
+        searched = Intlib.objects.annotate(rank=SearchRank(vector, query)).order_by('-rank')[:n]
+        result = IntlibSearchSerializer(searched, many=True).data
+        # result = JSONRenderer().render(result)
+        # result = list(searched.values('name', 'author_avatar', 'description', 'version'))
+        # result = list(searched.values('name', 'author__avatar', 'description', 'version'))
+        return JsonResponse({'result':result}, safe=False)
 
     except:
         return JsonResponse({'result':[]}, safe=False)
-
-# socialaccount_set.all()[0].get_avatar_url()
-
-# def get_imported(request):
-#     imported = json.loads(request.POST.get('imported', None))
-#     return render(request, 'florence/imported.html', {'imported':imported})

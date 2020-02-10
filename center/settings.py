@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.naver',
     'allauth.socialaccount.providers.facebook',
     'custom_user',
+    'rest_framework',
 
     'florence',
     'data',

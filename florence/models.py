@@ -13,13 +13,25 @@ class BigIdAbstract(models.Model):
 
 class User(AbstractEmailUser, BigIdAbstract):
     credit = models.IntegerField(default=0)
+    nick = models.CharField(max_length=120, blank=True, null=True)
+
+    def init_user(self):
+        self.nick = self.email.split('@')[0]
+        self.save()
+
+    @property
+    def avatar(self):
+        return self.socialaccount_set.all()[0].get_avatar_url()
+
+    # def natural_key(self):
+    #     return {'id':self.pk, 'email':self.email, 'avatar':self.socialaccount_set.all()[0].get_avatar_url()}
 
     def __str__(self):
         return self.email
 
 
 class Lib(BigIdAbstract):
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    # author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=200, blank=False, null=False)
     version = models.FloatField(default=0)
     description = models.TextField(null=True, blank=True)
@@ -45,10 +57,11 @@ class Lib(BigIdAbstract):
         return self.cast().__class__.__name__.lower()
 
     def __str__(self):
-        return self.name + ' | ' + self.author.email
+        return self.name + ' by ' + str(self.cast().author)
 
 
 class Intlib(Lib):
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     published = models.BooleanField(default=False)
     code = models.TextField(null=False, blank=False)
     exports = models.TextField(max_length=500, null=True, blank=True)
@@ -62,6 +75,7 @@ class Intlib(Lib):
 
 
 class Extlib(Lib):
+    author = models.CharField(max_length=200, blank=True, null=True)
     url = models.URLField(max_length=300, blank=False, null=False)
 
 
