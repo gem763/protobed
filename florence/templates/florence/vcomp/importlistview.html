@@ -1,29 +1,36 @@
 {% verbatim %}
 <script type='text/x-template' id='importlistview-template'>
-  <div class='ui segments' style='box-shadow:none;background:whitesmoke;border-color:whitesmoke;margin:0;'>
-    <div class='ui segment' @click='$emit("activate_search")' style='background:none;color:silver;'>
-      <i class="search icon"></i>Search libraries
-
-      <div class='ui icon compact button' @click.stop='show=!show' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;left:5px;transform:translateY(-50%);'>
-        <i v-if='show' key='1' class="material-icons">keyboard_arrow_down</i>
-        <i v-else key='2' class="material-icons">keyboard_arrow_up</i>
-      </div>
-
-    </div>
-
-    <template v-if='show'>
-      <div v-for='(imp, alias) in imported' @click='$emit("show_detail", alias)' :key='alias' class='ui left aligned segment' style='background:none;padding:10px;padding-left:20px;padding-right:50px;'>
-        <div><strong>{{ imp.name }}</strong></div>
-        <div class='ui black compact small icon button' style='position:absolute;top:50%;right:40px;transform:translateY(-50%);'>
-          <span style='font-weight:normal;color:silver;margin-right:10px;'>as</span>{{ alias }}
+  <div style='position:relative;z-index:5;'>
+    <div class='ui segments' style='box-shadow:none;background:whitesmoke;border-color:whitesmoke;margin:0;' :style='importlist_style'>
+      <div class='ui segment' @click='$emit("activate_search")' style='background:none;color:silver;'>
+        <div v-if='devmode'>
+          <i class="search icon"></i>Search libraries
         </div>
-        <i class="material-icons" @click.stop='$delete(imported,alias)' style='position:absolute;top:50%;right:8px;transform:translateY(-50%);cursor:pointer;'>close</i>
+        <div v-else>
+          {{nimports}} libraries imported
+        </div>
+
+        <div class='ui icon compact button' @click.stop='show=!show' style='width:40px;height:40px;margin:0;background:none;position:absolute;top:50%;left:5px;transform:translateY(-50%);'>
+          <i v-if='show' key='1' class="material-icons">keyboard_arrow_down</i>
+          <i v-else key='2' class="material-icons">keyboard_arrow_up</i>
+        </div>
+
       </div>
 
-      <div v-if='_.isEmpty(imported)' key='none' class='ui segment' style='background:none;padding:10px;color:black'>
-        No library imported
-      </div>
-    </template>
+      <template v-if='show'>
+        <div v-for='(imp, alias) in imported' @click='$emit("show_detail", alias)' :key='alias' class='ui left aligned segment' style='background:none;padding:10px;padding-left:20px;padding-right:50px;'>
+          <div><strong>{{ imp.name }}</strong></div>
+          <div class='ui black compact small icon button' style='position:absolute;top:50%;right:40px;transform:translateY(-50%);'>
+            <span style='font-weight:normal;color:silver;margin-right:10px;'>as</span>{{ alias }}
+          </div>
+          <i class="material-icons" @click.stop='$delete(imported,alias)' style='position:absolute;top:50%;right:8px;transform:translateY(-50%);cursor:pointer;'>close</i>
+        </div>
+
+        <div v-if='_.isEmpty(imported)' key='none' class='ui segment' style='background:none;padding:10px;color:black'>
+          No library imported
+        </div>
+      </template>
+    </div>
   </div>
 </script>
 
@@ -43,10 +50,34 @@
 <script>
   Vue.component('importlistview', {
     template: '#importlistview-template',
-    props: ['imported'],
+    props: ['imported', 'devmode'],
     data: function() {
       return {
-        show: true
+        show: this.devmode ? true: false,
+
+      }
+    },
+    computed: {
+      nimports: function() {
+        if (this.imported) {
+          return Object.keys(this.imported).length;
+        } else {
+          return 0;
+        }
+      },
+      importlist_style: function() {
+        if (this.devmode) {
+          return {}
+        } else {
+          return {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            // background: 'silver',
+            // border: '1px solid black'
+          }
+        }
       }
     }
   });

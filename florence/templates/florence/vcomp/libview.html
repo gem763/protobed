@@ -1,4 +1,5 @@
 {% include "florence/vcomp/codeview.html" %}
+{% include "florence/vcomp/importlistview.html" %}
 
 <style>
   .fade-enter-active, .fade-leave-active {
@@ -20,13 +21,14 @@
         </div>
 
         <div class='ui text container' style='display:flex;flex-direction:column;'>
-          <div style='text-align:left;padding:20px;'>
-            <div v-if='imp.name' style='font-size:20px;font-weight:bold;'>{{ imp.name }}</div>
+          <div style='text-align:left;padding:20px 10px 10px 10px;'>
+            <img v-if='imp.author' class="ui image" :src="imp.author.avatar" style="display:inline;object-fit:cover;width:30px;height:30px;border-radius:5px;margin-right:5px;">
+            <span v-if='imp.name' style='font-size:20px;font-weight:bold;'>{{ imp.name }}</span>
             <div v-if='imp.description'>{{ imp.description }}</div>
-            <img v-if='imp.author' class="ui image" style="object-fit:cover;width:30px;height:30px;border-radius:5px;">
           </div>
 
-          <codeview style='flex-grow:1;'></codeview>
+          <importlistview :imported='imp.imports' :devmode='false'></importlistview>
+          <codeview :lib='imp' style='flex-grow:1;'></codeview>
         </div>
 
     </div>

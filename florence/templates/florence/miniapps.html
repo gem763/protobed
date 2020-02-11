@@ -12,26 +12,11 @@
   <div class='ui text container'>
     {% verbatim %}
     <div id='module'>
-      <importview></importview>
+      <importview :imported='imported'></importview>
+      <editorview :code='code'></editorview>
+      <div class='ui fluid black button' onclick='testify()'>RUN</div>
+      <div><canvas id='mychart'></canvas></div>
     </div>
-    <!-- <div id="importview" style='position:relative;'>
-      <libsearchview
-        :active='onsearch'
-        :imported='imported'
-        @deactivate='onsearch=false'
-      ></libsearchview>
-
-      <importlistview
-        :imported='imported'
-        @activate_search='onsearch=true'
-        @show_detail='show_detail($event)'
-      ></importlistview>
-
-      <libview
-        :imp='imported[selected]'
-        @hide_detail='hide_detail'
-      ></libview>
-    </div> -->
     {% endverbatim %}
   </div>
 </div>
@@ -42,11 +27,24 @@
   {{ block.super }}
   {% include "florence/vcomp/importview.html" %}
   {% include "florence/vcomp/libview.html" %}
+  {% include "florence/vcomp/editorview.html" %}
 
   {% verbatim %}
   <script>
-    var importview = new Vue({
-      el: '#module'
+    var module = new Vue({
+      el: '#module',
+      data: {
+        imported: {},
+        code: `// TYPE YOUR CODE HERE
+
+const stocks = new alphastock.AlphaVantageStockDataSourcer();
+const params = {
+  apikey: '2JOML1ZPSME2Q28A',
+  symbol: 'aapl'
+};
+
+stocks.get_test(params);`
+      }
     });
 
     // function import_module(module_id) {
@@ -67,35 +65,75 @@
     // }
     //
     //
-    // function modulize(tree) {
-    //   let modulized;
-    //   //let exps = _.fromPairs(_.zip(tree.exports, tree.exports));
-    //   let exps = tree.exports.map(exp => exp + ':' + exp).join(', ');
-    //
-    //   if (jQuery.isEmptyObject(tree.imports)) {
-    //     modulized = `define(function(){
-    //       ${tree.code}
-    //       return { ${exps} }
-    //     })`;
-    //
-    //   } else {
-    //     let _imports = math.transpose(Object.entries(tree.imports));
-    //     let _modulized = _imports[1].map(function(imp) {
-    //       if (typeof imp === 'string') {
-    //         return imp;
-    //       } else {
-    //         return modulize(imp);
-    //       }
-    //     });
-    //     modulized = `define(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
-    //       ${tree.code}
-    //       return { ${exps} }
-    //     })`
-    //   }
-    //
-    //   let blob = new Blob([modulized], {type: 'text/javascript'});
-    //   return URL.createObjectURL(blob);
-    // }
+
+    function testify() {
+      // let mymodule = modulize(tree); console.log(mymodule);
+      // requirejs([mymodule], function(mod) {
+      //   const stocks = new mod[tree.exports]();
+      //   const params = {
+      //     apikey: '2JOML1ZPSME2Q28A',
+      //     symbol: 'aapl'
+      //   };
+      //
+      //   stocks.get_test(params);
+      // })
+
+      let _imports = math.transpose(Object.entries(module.imported));
+      let _modulized = _imports[1].map(function(imp) {
+        if (typeof imp === 'string') {
+          return imp;
+        } else {
+          return modulize(imp);
+        }
+      });
+
+      modulized = `requirejs(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
+        ${module.code}
+      })`;
+
+      let blob = new Blob([modulized], {type: 'text/javascript'});
+      let js = URL.createObjectURL(blob);
+
+      // console.log(js);
+      import(js).then(testjs => {
+        // console.log('test');
+      });
+    }
+
+
+    function modulize(tree) {
+      let modulized;
+      let exps;
+
+      if (tree.exports) {
+        exps = tree.exports.map(exp => exp + ':' + exp).join(', ');
+      }
+
+      if (jQuery.isEmptyObject(tree.imports)) {
+        modulized = `define(function(){
+          ${tree.code}
+          return { ${exps} }
+        })`;
+
+      } else {
+        let _imports = math.transpose(Object.entries(tree.imports));
+        let _modulized = _imports[1].map(function(imp) {
+          // if (typeof imp === 'string') {
+          if (imp.url) {
+            return imp.url;
+          } else {
+            return modulize(imp);
+          }
+        });
+        modulized = `define(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
+          ${tree.code}
+          return { ${exps} }
+        })`
+      }
+
+      let blob = new Blob([modulized], {type: 'text/javascript'});
+      return URL.createObjectURL(blob);
+    }
   </script>
   {% endverbatim %}
 {% endblock js %}

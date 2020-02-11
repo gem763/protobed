@@ -1,15 +1,16 @@
-<script type='text/x-template' id='codeview-template'>
-  <div style='background:none;'>
-    <div ref='editor' style='height:300px;background:none;margin-top:60px;'></div>
+<script type='text/x-template' id='editorview-template'>
+  <div style='background:whitesmoke;margin-top:10px;position:relative;height:200px;'>
+    <div ref='editor' style='background:none;position:absolute;top:5px;left:5px;right:5px;bottom:5px;'></div>
   </div>
 </script>
 
 
 <script>
-  Vue.component('codeview', {
-    template: '#codeview-template',
+  Vue.component('editorview', {
+    template: '#editorview-template',
     delimiters: ['[[', ']]'],
-    props: ['lib'],
+    props: ['code'],
+    // props: ['lib'],
     data: function() {
       return {
         editor: null
@@ -23,14 +24,12 @@
   			highlightActiveLine: true, // 현재 행에 하이라이트 표시
   			theme: 'ace/theme/chrome', // 표시 테마
         showGutter: false,
-        readOnly: true,
+        readOnly: false,
         mode: "ace/mode/javascript",
         // autoScrollEditorIntoView: true,
   		});
 
-      if (this.lib) {
-        this.editor.setValue(this.lib.code, -1);
-      }
+      this.editor.setValue(this.code, -1);
     }
   });
 </script>
