@@ -4,12 +4,14 @@
 <script type='text/x-template' id='importview-template'>
   <div class="importview" style='position:relative;'>
     <libsearchview
+      v-show='true'
       :active='onsearch'
       :imported='imported'
       @deactivate='onsearch=false'
     ></libsearchview>
 
     <importlistview
+      v-show='true'
       :imported='imported'
       :devmode='true'
       @activate_search='onsearch=true'
@@ -17,6 +19,7 @@
     ></importlistview>
 
     <libview
+      v-show='true'
       :imp='imported[selected]'
       @hide_detail='hide_detail'
     ></libview>

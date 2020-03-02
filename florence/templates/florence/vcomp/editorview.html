@@ -1,6 +1,9 @@
 <script type='text/x-template' id='editorview-template'>
-  <div style='background:whitesmoke;margin-top:10px;position:relative;height:200px;'>
-    <div ref='editor' style='background:none;position:absolute;top:5px;left:5px;right:5px;bottom:5px;'></div>
+  <div style='background:whitesmoke;margin-top:15px;padding-top:10px;padding-bottom:10px;'>
+    <div class='ui text container'>
+      <div ref='editor' style='background:none;'></div>
+      <div class='ui fluid black button' @click='$emit("testify")' style='margin-top:20px;'>RUN</div>
+    </div>
   </div>
 </script>
 
@@ -10,7 +13,6 @@
     template: '#editorview-template',
     delimiters: ['[[', ']]'],
     props: ['code'],
-    // props: ['lib'],
     data: function() {
       return {
         editor: null
@@ -20,7 +22,9 @@
     mounted: function() {
       this.editor = ace.edit(this.$refs.editor);
       this.editor.setOptions({
-  			maxLines: Infinity,        // 줄 전체를 표시
+  			// maxLines: 5,
+        maxLines: Infinity,        // 줄 전체를 표시
+        minLines: 10,
   			highlightActiveLine: true, // 현재 행에 하이라이트 표시
   			theme: 'ace/theme/chrome', // 표시 테마
         showGutter: false,

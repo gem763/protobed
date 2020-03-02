@@ -27,8 +27,8 @@
             <div v-if='imp.description'>{{ imp.description }}</div>
           </div>
 
-          <importlistview :imported='imp.imports' :devmode='false'></importlistview>
-          <codeview :lib='imp' style='flex-grow:1;'></codeview>
+          <importlistview v-if='!_.isEmpty(imp.imports)' :imported='imp.imports' :devmode='false'></importlistview>
+          <codeview v-if='true' :lib='imp' style='flex-grow:1;'></codeview>
         </div>
 
     </div>

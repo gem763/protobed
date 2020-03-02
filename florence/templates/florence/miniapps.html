@@ -8,16 +8,14 @@
 
 
 {% block mastbody %}
-<div class="ui center aligned vertical segment" style="background:none;border:none;min-height:500px;">
-  <div class='ui text container'>
-    {% verbatim %}
-    <div id='module'>
-      <importview :imported='imported'></importview>
-      <editorview :code='code'></editorview>
-      <div class='ui fluid black button' onclick='testify()'>RUN</div>
+<div class="ui center aligned vertical segment" style="background:none;border:none;">
+  <div id='module'>
+    <importview :imported='imported'></importview>
+    <editorview :code='code' @testify='testify'></editorview>
+
+    <div class='ui text container'>
       <div><canvas id='mychart'></canvas></div>
     </div>
-    {% endverbatim %}
   </div>
 </div>
 {% endblock mastbody %}
@@ -29,10 +27,10 @@
   {% include "florence/vcomp/libview.html" %}
   {% include "florence/vcomp/editorview.html" %}
 
-  {% verbatim %}
   <script>
     var module = new Vue({
       el: '#module',
+      delimiters: ['[[', ']]'],
       data: {
         imported: {},
         code: `// TYPE YOUR CODE HERE
@@ -44,6 +42,12 @@ const params = {
 };
 
 stocks.get_test(params);`
+      },
+
+      methods: {
+        testify: function() {
+          testify();
+        }
       }
     });
 
@@ -135,5 +139,4 @@ stocks.get_test(params);`
       return URL.createObjectURL(blob);
     }
   </script>
-  {% endverbatim %}
 {% endblock js %}

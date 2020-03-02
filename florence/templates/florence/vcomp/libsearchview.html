@@ -65,67 +65,69 @@
 {% verbatim %}
 <script type='text/x-template' id='libsearchview-template'>
   <transition name='libsearchview-show'>
-    <div v-if='active' @mousedown.prevent class='libsearchview'>
-      <div class='ui segments'>
-        <div class='ui segment'>
-          <div class='search ui fluid transparent input'>
-            <input ref='input' v-model='searchkeyword' @blur='$emit("deactivate")' class="prompt" type="text" spellcheck="false">
+
+      <div v-if='active' @mousedown.prevent class='libsearchview'>
+        <div class='ui segments'>
+          <div class='ui segment'>
+            <div class='search ui fluid transparent input'>
+              <input ref='input' v-model='searchkeyword' @blur='$emit("deactivate")' class="prompt" type="text" spellcheck="false" style='height:21px;'>
+            </div>
+
+            <transition name='searchkeyword-clear'>
+              <div v-if='searchkeyword' class='action ui icon button' @click='searchkeyword=""'>
+                <i class="times circle icon" style='vertical-align:middle;'></i>
+              </div>
+            </transition>
           </div>
 
-          <transition name='searchkeyword-clear'>
-            <div v-if='searchkeyword' class='action ui icon button' @click='searchkeyword=""'>
-              <i class="times circle icon" style='vertical-align:middle;'></i>
+          <template v-if='searchkeyword.length > 2'>
+            <div v-for='lib in searched_libs' class='ui left aligned segment' style='padding-right:50px;'>
+              <img v-if='lib.author_avatar' class="ui image" :src="lib.author_avatar" style="display:inline;object-fit:cover;width:30px;height:30px;border-radius:5px;margin-right:5px;">
+              <span style='font-weight:bold;font-size:20px;'>{{ lib.name }}</span>
+              <div v-if='lib.version' class='version ui compact mini button'>
+                {{ lib.version }}
+              </div>
+
+              <div class='content'>{{ lib.description }}</div>
+              <div v-if='lib.url' class='content' style='color:silver;'>{{ lib.url }}</div>
+
+              <div v-if='has(lib)' class='action ui icon compact button' style='color:orange;'>
+                <i class="material-icons">check</i>
+              </div>
+              <div v-else class='action ui icon compact button' @click='import_lib(lib)'>
+                <i class="material-icons">add</i>
+              </div>
             </div>
-          </transition>
+
+            <div v-if='searched_libs.length==0' class='ui segment' style='padding:10px;'>
+              <p style='background:none;margin-bottom:0;'>
+                <i class="material-icons-outlined" style='font-size:40px;'>priority_high</i>
+              </p>
+              <p style='background:none;'>
+                No matching library
+              </p>
+            </div>
+          </template>
+
+          <template v-else>
+            <div class='ui segment' style='padding:10px;color:black;'>
+              <p style='background:none;margin-bottom:0;'>
+                <i class="material-icons-outlined" style='font-size:40px;'>search</i>
+              </p>
+              <p style='background:none;'>
+                Please type keywords of js library to import
+              </p>
+            </div>
+          </template>
+
         </div>
 
-        <template v-if='searchkeyword.length > 2'>
-          <div v-for='lib in searched_libs' class='ui left aligned segment' style='padding-right:50px;'>
-            <img v-if='lib.author_avatar' class="ui image" :src="lib.author_avatar" style="display:inline;object-fit:cover;width:30px;height:30px;border-radius:5px;margin-right:5px;">
-            <span style='font-weight:bold;font-size:20px;'>{{ lib.name }}</span>
-            <div v-if='lib.version' class='version ui compact mini button'>
-              {{ lib.version }}
-            </div>
-
-            <div class='content'>{{ lib.description }}</div>
-            <div v-if='lib.url' class='content' style='color:silver;'>{{ lib.url }}</div>
-
-            <div v-if='has(lib)' class='action ui icon compact button' style='color:orange;'>
-              <i class="material-icons">check</i>
-            </div>
-            <div v-else class='action ui icon compact button' @click='import_lib(lib)'>
-              <i class="material-icons">add</i>
-            </div>
-          </div>
-
-          <div v-if='searched_libs.length==0' class='ui segment' style='padding:10px;'>
-            <p style='background:none;margin-bottom:0;'>
-              <i class="material-icons-outlined" style='font-size:40px;'>priority_high</i>
-            </p>
-            <p style='background:none;'>
-              No matching library
-            </p>
-          </div>
-        </template>
-
-        <template v-else>
-          <div class='ui segment' style='padding:10px;color:black;'>
-            <p style='background:none;margin-bottom:0;'>
-              <i class="material-icons-outlined" style='font-size:40px;'>search</i>
-            </p>
-            <p style='background:none;'>
-              Please type keywords of js library to import
-            </p>
-          </div>
-        </template>
+        <div class='ui icon compact right floated button' @click='$emit("deactivate")' style='width:40px;height:40px;background:none;'>
+          <i class="material-icons">close</i>
+        </div>
 
       </div>
 
-      <div class='ui icon compact right floated button' @click='$emit("deactivate")' style='width:40px;height:40px;background:none;'>
-        <i class="material-icons">close</i>
-      </div>
-
-    </div>
   </transition>
 </script>
 
@@ -302,6 +304,7 @@
         var libsearchview = this;
         libsearchview.spinner_start();
 
+        // fetch(lib.url.replace(/.min.js$/g, '.js'))
         fetch(lib.url)
           .then(x => x.text())
           .then(function(code) {
@@ -309,6 +312,7 @@
             Vue.set(libsearchview.imported, alias, {
               name: lib.name + ' ' + lib.version,
               url: lib.url,
+              description: lib.description,
               code: code
             });
 
