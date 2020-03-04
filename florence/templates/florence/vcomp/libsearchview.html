@@ -65,6 +65,7 @@
 {% verbatim %}
 <script type='text/x-template' id='libsearchview-template'>
   <transition name='libsearchview-show'>
+    <div class='ui text container' style='position:relative;'>
 
       <div v-if='active' @mousedown.prevent class='libsearchview'>
         <div class='ui segments'>
@@ -128,6 +129,7 @@
 
       </div>
 
+    </div>
   </transition>
 </script>
 

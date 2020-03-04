@@ -35,18 +35,35 @@
         imported: {},
         code: `// TYPE YOUR CODE HERE
 
-const stocks = new alphastock.AlphaVantageStockDataSourcer();
-const params = {
-  apikey: '2JOML1ZPSME2Q28A',
-  symbol: 'aapl'
-};
+class MultiAlphastock extends alphastock.Alphastock {
+  opt = {
+    symbols: ['goog', 'aapl'],
+    apikey: '2JOML1ZPSME2Q28A',
+    fields: ['open', 'high', 'low', 'close', 'adj_close', 'volume', 'div_amount', 'split']
+  };
 
-stocks.get_test(params);`
+  async get(opt) {
+    //   axios.get('https://yesno.wtf/api')
+    //       .then(function (response) {
+    //         vm.answer = _.capitalize(response.data.answer)
+    //       })
+    // const url = 'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=MSFT&interval=5min&apikey=demo';
+    // return await axios.get(url)
+    //                 .then(res => res.json())
+    //                 .then(json => json["Time Series (5min)"]);
+    return jq.map([1,2,3], (item)=>{return item*2})
+  }
+}
+
+const mstocks = new MultiAlphastock();
+// stocks.opt.symbol = 'goog';
+// stocks.opt.apikey = '2JOML1ZPSME2Q28A';
+mstocks.test();`
       },
 
       methods: {
-        testify: function() {
-          testify();
+        testify: function(code) {
+          testify(code);
         }
       }
     });
@@ -70,35 +87,45 @@ stocks.get_test(params);`
     //
     //
 
-    function testify() {
-      // let mymodule = modulize(tree); console.log(mymodule);
-      // requirejs([mymodule], function(mod) {
-      //   const stocks = new mod[tree.exports]();
-      //   const params = {
-      //     apikey: '2JOML1ZPSME2Q28A',
-      //     symbol: 'aapl'
-      //   };
-      //
-      //   stocks.get_test(params);
-      // })
-
+    function testify(code) {
       let _imports = math.transpose(Object.entries(module.imported));
       let _modulized = _imports[1].map(function(imp) {
-        if (typeof imp === 'string') {
-          return imp;
+        if ('url' in imp) {
+          return imp.url;
         } else {
           return modulize(imp);
         }
       });
 
+
+      const prepend = `requirejs.config({
+        map: {
+          '*': {
+              'jquery': "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"
+          }
+        }
+      });`
+
+      // paths: {
+      //   "lodash": "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min",
+      //   "jquery": "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min"
+      // },
+
+      // _modulized.push('lodash');
+      // _imports[0].push('lod');
+      //
+      // _modulized.push('jquery');
+      // _imports[0].push('jq');
+
       modulized = `requirejs(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
-        ${module.code}
+        ${code}
       })`;
+
 
       let blob = new Blob([modulized], {type: 'text/javascript'});
       let js = URL.createObjectURL(blob);
 
-      // console.log(js);
+      console.log(js);
       import(js).then(testjs => {
         // console.log('test');
       });

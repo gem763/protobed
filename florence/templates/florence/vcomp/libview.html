@@ -21,15 +21,15 @@
         </div>
 
         <div class='ui text container' style='display:flex;flex-direction:column;'>
-          <div style='text-align:left;padding:20px 10px 10px 10px;'>
+          <div style='text-align:left;padding-top:20px;padding-bottom:10px;'>
             <img v-if='imp.author' class="ui image" :src="imp.author.avatar" style="display:inline;object-fit:cover;width:30px;height:30px;border-radius:5px;margin-right:5px;">
             <span v-if='imp.name' style='font-size:20px;font-weight:bold;'>{{ imp.name }}</span>
             <div v-if='imp.description'>{{ imp.description }}</div>
           </div>
-
-          <importlistview v-if='!_.isEmpty(imp.imports)' :imported='imp.imports' :devmode='false'></importlistview>
-          <codeview v-if='true' :lib='imp' style='flex-grow:1;'></codeview>
         </div>
+
+        <importlistview v-if='!_.isEmpty(imp.imports)' :imported='imp.imports' :devmode='false'></importlistview>
+        <codeview v-if='true' :lib='imp' style='flex-grow:1;'></codeview>
 
     </div>
   </transition>

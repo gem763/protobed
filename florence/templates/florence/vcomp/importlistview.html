@@ -20,10 +20,20 @@
       <template v-if='show'>
         <div v-for='(imp, alias) in imported' @click='$emit("show_detail", alias)' :key='alias' class='ui left aligned segment' style='background:none;padding-left:20px;padding-right:50px;'>
           <div><strong>{{ imp.name }}</strong></div>
-          <div class='ui black compact small icon button' style='position:absolute;top:50%;right:40px;transform:translateY(-50%);'>
-            <span style='font-weight:normal;color:silver;margin-right:10px;'>as</span>{{ alias }}
+
+          <div v-if='devmode'>
+            <div class='ui black compact small icon button' style='position:absolute;top:50%;right:40px;transform:translateY(-50%);'>
+              <span style='font-weight:normal;color:silver;margin-right:10px;'>as</span>{{ alias }}
+            </div>
+            <i class="material-icons" @click.stop='$delete(imported,alias)' style='position:absolute;top:50%;right:8px;transform:translateY(-50%);cursor:pointer;'>close</i>
           </div>
-          <i class="material-icons" @click.stop='$delete(imported,alias)' style='position:absolute;top:50%;right:8px;transform:translateY(-50%);cursor:pointer;'>close</i>
+
+          <div v-else>
+            <div class='ui black compact small icon button' style='position:absolute;top:50%;right:8px;transform:translateY(-50%);'>
+              <span style='font-weight:normal;color:silver;margin-right:10px;'>as</span>{{ alias }}
+            </div>
+          </div>
+
         </div>
 
         <div v-if='_.isEmpty(imported)' key='none' class='ui segment' style='background:none;color:black'>

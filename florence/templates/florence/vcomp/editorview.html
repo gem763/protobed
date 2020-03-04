@@ -1,8 +1,17 @@
+<style>
+  .ace_mobile-menu {
+    display: none !important;
+  }
+</style>
+
 <script type='text/x-template' id='editorview-template'>
   <div style='background:whitesmoke;margin-top:15px;padding-top:10px;padding-bottom:10px;'>
     <div class='ui text container'>
       <div ref='editor' style='background:none;'></div>
-      <div class='ui fluid black button' @click='$emit("testify")' style='margin-top:20px;'>RUN</div>
+
+      <div style='background:none;text-align:left;'>
+        <div class='ui black button' @click='testify' style='margin-top:20px;'>RUN</div>
+      </div>
     </div>
   </div>
 </script>
@@ -16,6 +25,13 @@
     data: function() {
       return {
         editor: null
+      }
+    },
+
+    methods: {
+      testify: function() {
+        const code = this.editor.getValue();
+        this.$emit('testify', code);
       }
     },
 
