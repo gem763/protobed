@@ -14,7 +14,7 @@
     <editorview :code='code' @testify='testify'></editorview>
 
     <div class='ui text container'>
-      <div><canvas id='mychart'></canvas></div>
+      <!-- <div><canvas id='mychart'></canvas></div> -->
     </div>
   </div>
 </div>
@@ -51,7 +51,7 @@ class MultiAlphastock extends alphastock.Alphastock {
     // return await axios.get(url)
     //                 .then(res => res.json())
     //                 .then(json => json["Time Series (5min)"]);
-    return jq.map([1,2,3], (item)=>{return item*2})
+    return jquery.map([1,2,3], (item)=>{return item*2})
   }
 }
 
@@ -68,43 +68,23 @@ mstocks.test();`
       }
     });
 
-    // function import_module(module_id) {
-    //   $.ajax({
-    //     type: 'GET',
-    //     url: '/florence/lib/' + module_id + '/family/',
-    //     dataType:'json',
-    //     cache: false,
-    //     success: function(resp) {
-    //       console.log(resp.family);
-    //       console.log(modulize(resp.family));
-    //     },
-    //     error: function(xhr, errmsg, err) {
-    //       console.log(xhr.status + ': ' + xhr.responseText);
-    //     },
-    //     complete: function() {}
-    //   });
-    // }
-    //
-    //
 
     function testify(code) {
-      let _imports = math.transpose(Object.entries(module.imported));
-      let _modulized = _imports[1].map(function(imp) {
-        if ('url' in imp) {
-          return imp.url;
-        } else {
-          return modulize(imp);
-        }
+      var testmodule = modulize({
+        imports:module.imported,
+        code:code
       });
 
+      testmodule = `requirejs([${JSON.stringify(testmodule)}], function() {})`;
+      let blob = new Blob([testmodule], {type: 'text/javascript'});
+      let js = URL.createObjectURL(blob);
 
-      const prepend = `requirejs.config({
-        map: {
-          '*': {
-              'jquery': "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"
-          }
-        }
-      });`
+      console.log(js);
+      import(js).then(testjs => {});
+
+
+      // const prepend = `requirejs.config({
+      // });`
 
       // paths: {
       //   "lodash": "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min",
@@ -116,21 +96,10 @@ mstocks.test();`
       //
       // _modulized.push('jquery');
       // _imports[0].push('jq');
-
-      modulized = `requirejs(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
-        ${code}
-      })`;
-
-
-      let blob = new Blob([modulized], {type: 'text/javascript'});
-      let js = URL.createObjectURL(blob);
-
-      console.log(js);
-      import(js).then(testjs => {
-        // console.log('test');
-      });
     }
 
+
+    const requirejs_config_set = {};
 
     function modulize(tree) {
       let modulized;
@@ -140,7 +109,7 @@ mstocks.test();`
         exps = tree.exports.map(exp => exp + ':' + exp).join(', ');
       }
 
-      if (jQuery.isEmptyObject(tree.imports)) {
+      if ($.isEmptyObject(tree.imports)) {
         modulized = `define(function(){
           ${tree.code}
           return { ${exps} }
@@ -148,14 +117,22 @@ mstocks.test();`
 
       } else {
         let _imports = math.transpose(Object.entries(tree.imports));
+        var path;
+        var id;
+
         let _modulized = _imports[1].map(function(imp) {
-          // if (typeof imp === 'string') {
           if (imp.url) {
-            return imp.url;
+            path = imp.url.replace(/.js$/, '');
+            id = path.replace(/^https?:\/\//, '');
+            requirejs_config_set[id] = [path];
+            // return imp.url;
+            return id;
+
           } else {
             return modulize(imp);
           }
         });
+
         modulized = `define(${JSON.stringify(_modulized)}, function(${_imports[0]}) {
           ${tree.code}
           return { ${exps} }
