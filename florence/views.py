@@ -86,6 +86,7 @@ def familize(intlib):
             'avatar': intlib.author.socialaccount_set.all()[0].get_avatar_url(),
         },
         'name': intlib.name,
+        'version': intlib.version,
         'description': intlib.description,
         'exports': [exp.strip() for exp in intlib.exports.split(',')]
     }

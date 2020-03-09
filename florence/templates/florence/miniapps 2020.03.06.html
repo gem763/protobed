@@ -75,23 +75,31 @@ mstocks.test();`
         code:code
       });
 
-      testmodule = `
-        requirejs.config(${JSON.stringify(requirejs_config)});
-        requirejs([${JSON.stringify(testmodule)}], function() {});
-      `
-
+      testmodule = `requirejs([${JSON.stringify(testmodule)}], function() {})`;
       let blob = new Blob([testmodule], {type: 'text/javascript'});
       let js = URL.createObjectURL(blob);
 
       console.log(js);
       import(js).then(testjs => {});
+
+
+      // const prepend = `requirejs.config({
+      // });`
+
+      // paths: {
+      //   "lodash": "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min",
+      //   "jquery": "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min"
+      // },
+
+      // _modulized.push('lodash');
+      // _imports[0].push('lod');
+      //
+      // _modulized.push('jquery');
+      // _imports[0].push('jq');
     }
 
 
-    const requirejs_config = {
-      paths: {},
-      shim: {}
-    };
+    const requirejs_config_set = {};
 
     function modulize(tree) {
       let modulized;
@@ -116,15 +124,8 @@ mstocks.test();`
           if (imp.url) {
             path = imp.url.replace(/.js$/, '');
             id = path.replace(/^https?:\/\//, '');
-            requirejs_config.paths[id] = path;
-
-            // 이 부분을 좀더 분화할 필요가 있다 2020.03.09
-            if (imp.name=='jquery')
-              requirejs_config.shim[id] = { exports: '$' };
-
-            else if (imp.name=='underscore.js')
-              requirejs_config.shim[id] = { exports: '_' };
-
+            requirejs_config_set[id] = [path];
+            // return imp.url;
             return id;
 
           } else {

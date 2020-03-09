@@ -1,3 +1,13 @@
+<style>
+  .alias-editor-show-enter-active, .alias-editor-show-leave-active {
+    transition: all 0.2s ease;
+  }
+  .alias-editor-show-enter, .alias-editor-show-leave-to {
+    opacity: 0;
+  }
+</style>
+
+
 {% verbatim %}
 <script type='text/x-template' id='importlistview-template'>
   <div class='ui text container' style='position:relative;z-index:5;background:none;'>
@@ -18,27 +28,46 @@
       </div>
 
       <template v-if='show'>
-        <div v-for='(imp, alias) in imported' @click='$emit("show_detail", alias)' :key='alias' class='ui left aligned segment' style='background:none;padding-left:20px;padding-right:50px;'>
-          <div><strong>{{ imp.name }}</strong></div>
+        <div v-for='imp in import_iter' @click='$emit("show_detail", imp.alias)' :key='imp.order' class='ui left aligned segment' style='background:none;padding-left:20px;padding-right:50px;'>
+          <div><strong>{{ imp.name }} {{ imp.version }}</strong></div>
 
-          <div v-if='devmode'>
-            <div class='ui black compact small icon button' style='position:absolute;top:50%;right:40px;transform:translateY(-50%);'>
-              <span style='font-weight:normal;color:silver;margin-right:10px;'>as</span>{{ alias }}
+          <div v-show='true' @click.stop='alias_editing=imp.alias'>
+            <div v-if='devmode'>
+              <div class='ui black compact small icon button' style='position:absolute;top:50%;right:40px;transform:translateY(-50%);'>
+                <span style='font-weight:normal;color:silver;margin-right:10px;'>as</span>{{ imp.alias }}
+              </div>
+              <i class="material-icons" @click.stop='$delete(imported, imp.alias)' style='position:absolute;top:50%;right:8px;transform:translateY(-50%);cursor:pointer;'>close</i>
             </div>
-            <i class="material-icons" @click.stop='$delete(imported,alias)' style='position:absolute;top:50%;right:8px;transform:translateY(-50%);cursor:pointer;'>close</i>
-          </div>
 
-          <div v-else>
-            <div class='ui black compact small icon button' style='position:absolute;top:50%;right:8px;transform:translateY(-50%);'>
-              <span style='font-weight:normal;color:silver;margin-right:10px;'>as</span>{{ alias }}
+            <div v-else>
+              <div class='ui black compact small icon button' style='position:absolute;top:50%;right:8px;transform:translateY(-50%);'>
+                <span style='font-weight:normal;color:silver;margin-right:10px;'>as</span>{{ imp.alias }}
+              </div>
             </div>
           </div>
-
         </div>
 
         <div v-if='_.isEmpty(imported)' key='none' class='ui segment' style='background:none;color:black'>
           No library imported
         </div>
+
+        <transition name='alias-editor-show'>
+          <div v-if='alias_editing' style='position:absolute;top:100px;left:50%;width:70%;transform:translate(-50%,-50%);background:white;border-radius:10px;box-shadow:0 0 50px rgba(0,0,0,0.2);padding:20px;'>
+            <div style='margin-bottom:20px;'>
+              use jquery as
+
+              <div style='background:whitesmoke;height:50px;border-radius:5px;padding-left:10px;'>
+                <div class='ui transparent fluid input'>
+                  <input ref='input' class="prompt" type="text" spellcheck="false" style='font-size:20px;font-weight:bold;height:50px;text-align:center;' :value='alias_editing'>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class='ui small button' style='width:45%;' @click='alias_editing=null'>CLOSE</div>
+              <div class='ui black small button' style='width:45%;' @click='edit_alias'>APPLY</div>
+            </div>
+          </div>
+        </transition>
       </template>
     </div>
   </div>
@@ -52,10 +81,15 @@
     data: function() {
       return {
         show: this.devmode ? true: false,
+        alias_editing: null
 
       }
     },
     computed: {
+      import_iter: function() {
+        let _iter = _.transform(this.imported, function(result, value, key){ result[key] = {...value, alias:key} }, {});
+        return _.orderBy(Object.values(_iter), ['order'], ['asc']);
+      },
       nimports: function() {
         if (this.imported) {
           return Object.keys(this.imported).length;
@@ -76,6 +110,21 @@
             // border: '1px solid black'
           }
         }
+      }
+    },
+    methods: {
+      edit_alias: function() {
+        let new_alias = this.$refs.input.value;
+        Vue.set(this.imported, new_alias, this.imported[this.alias_editing]);
+        delete this.imported[this.alias_editing];
+        this.alias_editing = null;
+
+        // this.imported = _.mapKeys(this.imported, function(value, key) {
+        //   if (key==this.alias_editing)
+        //     return new_alias;
+        //   else
+        //     return key;
+        // });
       }
     }
   });

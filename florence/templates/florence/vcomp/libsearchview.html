@@ -146,7 +146,8 @@
         searched: {
           intlibs: [],
           extlibs: []
-        }
+        },
+        import_order: 0
       }
     },
 
@@ -312,10 +313,12 @@
           .then(function(code) {
             let alias = libsearchview.guess_alias_from_name(lib.name)
             Vue.set(libsearchview.imported, alias, {
-              name: lib.name + ' ' + lib.version,
+              name: lib.name, // + ' ' + lib.version,
+              version: lib.version,
               url: lib.url,
               description: lib.description,
-              code: code
+              code: code,
+              order: libsearchview.import_order++
             });
 
             libsearchview.$emit('deactivate');
