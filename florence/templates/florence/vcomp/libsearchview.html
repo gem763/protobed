@@ -176,7 +176,7 @@
         if (newKeyword_trim.length == 0) {
           this.searchkeyword = '';
 
-        } else if (newKeyword_trim.length > 2) {
+        } else if (newKeyword_trim.length > 1) {
           this.debouncedSearch();
 
         } else {
@@ -295,8 +295,8 @@
         fetch(api)
           .then(x => x.json())
           .then(function({family}) {
-            let alias = libsearchview.guess_alias_from_name(lib.name)
-            Vue.set(libsearchview.imported, alias, family)
+            let alias = libsearchview.guess_alias_from_name(lib.name);
+            Vue.set(libsearchview.imported, alias, family);
             libsearchview.$emit('deactivate');
             libsearchview.spinner_stop();
           });
@@ -311,7 +311,7 @@
         fetch(lib.url)
           .then(x => x.text())
           .then(function(code) {
-            let alias = libsearchview.guess_alias_from_name(lib.name)
+            let alias = libsearchview.guess_alias_from_name(lib.name);
             Vue.set(libsearchview.imported, alias, {
               name: lib.name, // + ' ' + lib.version,
               version: lib.version,
