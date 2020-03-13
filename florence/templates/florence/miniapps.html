@@ -33,79 +33,25 @@
       delimiters: ['[[', ']]'],
       data: {
         imported: {},
-        code: `const stock = new alpha.Alphastock();
-// stock.test();
+        code: `// const stock = new alpha.Alphastock();
+// stock.opt = {
+//     symbol: 'gld',
+//     apikey: '2JOML1ZPSME2Q28A',
+//     fields: ['close']
+// };
+// // stock.log();
 
+// const linechart = new line.Linechart(stock);
+// linechart.opt = {
+//     margin: {top: 50, right: 50, bottom: 50, left: 70},
+//     linecolor: 'orange',
+//     linewidth: '3px',
+//     x_field: 'date',
+//     y_field: 'close',
+// };
+// linechart.show('#chart');
 
-class LineViewer extends gen.BaseViewer {
-  opt = {
-    margin: {top: 30, right: 30, bottom: 50, left: 50},
-    linecolor: 'orange',
-    linewidth: '3px',
-    x_field: 'date',
-    y_field: 'close',
-  };
-
-  show(where) {
-    const opt = this.opt;
-    const svg = d3.select(where)
-                  .html('')
-                  .append("svg")
-                  .attr('width', '100%')
-                  .attr('height', '100%')
-                //   .style('background', 'lightyellow')
-                  .append("g")
-                  .attr("transform", "translate(" + opt.margin.left + "," + opt.margin.top + ")");
-
-    const canvas = d3.select('#chart').node().getBoundingClientRect();
-    const width = canvas.width - opt.margin.left - opt.margin.right;
-    const height = canvas.height - opt.margin.top - opt.margin.bottom;
-
-    const parseTime = d3.timeParse("%Y-%m-%d");
-    const x = d3.scaleTime().range([0, width]);
-    const y0 = d3.scaleLinear().range([height, 0]);
-
-    const line0 = d3.line()
-                    .x(d => x(d[opt.x_field]))
-                    .y(d => y0(d[opt.y_field]));
-
-
-    this.sourcer.get(this.sourcer.opt).then(data => {
-      // format the data
-      data.forEach(d => {
-        d.date = parseTime(d[opt.x_field]);
-        d.close = +d[opt.y_field];
-      });
-
-      const y_min = d3.min(data, d => Math.min(d[opt.y_field])) * 0.97;
-      const y_max = d3.max(data, d => Math.max(d[opt.y_field])) * 1.03;
-
-      // Scale the range of the data
-      x.domain(d3.extent(data, d => d[opt.x_field]));
-      y0.domain([y_min, y_max]);
-
-      // Add the line0 path.
-      svg.append("path")
-         .data([data])
-         .style('fill', 'none')
-         .style('stroke', opt.linecolor)
-         .style('stroke-width', opt.linewidth)
-         .attr("d", line0);
-
-      // Add the X Axis
-      svg.append("g")
-         .attr("transform", "translate(0," + height + ")")
-         .call(d3.axisBottom(x));
-
-      // Add the Y0 Axis
-      svg.append("g")
-         .call(d3.axisLeft(y0));
-    });
-  }
-}
-
-const linechart = new LineChart(stock);
-linechart.show('#chart');`
+// new gen.BaseMiniapp(alpha.Alphastock, line.LineChart).run('#chart')`
       },
 
       methods: {
@@ -140,6 +86,7 @@ linechart.show('#chart');`
       shim: {}
     };
 
+
     function modulize(tree) {
       let modulized;
       let exps;
@@ -149,6 +96,7 @@ linechart.show('#chart');`
       }
 
       if ($.isEmptyObject(tree.imports)) {
+      // if (!tree.imports) {
         modulized = `define(function(){
           ${tree.code}
           return { ${exps} }

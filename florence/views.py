@@ -69,7 +69,7 @@ def my(request):
 #     return render(request, 'florence/import_module.html', {'module':mod})
 
 
-def familize(intlib):
+def familize_old(intlib):
     imports = {}
     for imp in intlib.imports.all():
         if imp.lib.typeof=='intlib':
@@ -92,8 +92,32 @@ def familize(intlib):
     }
 
 
+def familize(lib):
+    output = {
+        'id': lib.pk,
+        'name': lib.name,
+        'version': lib.version,
+        'description': lib.description,
+    }
+
+    if lib.typeof=='intlib':
+        output['code'] = lib.intlib.code
+        output['author'] = {
+            'id': lib.intlib.author.pk,
+            'avatar': lib.intlib.author.socialaccount_set.all()[0].get_avatar_url(),
+        }
+        output['imports'] = {imp.alias:familize(imp.lib) for imp in lib.imports.all()}
+        output['exports'] = [exp.strip() for exp in lib.intlib.exports.split(',')]
+
+    else:
+        output['url'] = lib.extlib.url
+        output['author'] = lib.extlib.author
+
+    return output
+
+
 def lib_family(request, pk):
-    lib = Intlib.objects.get(pk=pk)
+    lib = Lib.objects.get(pk=pk)
     # ser = serializers.serialize('python', [lib], use_natural_foreign_keys=True)
 
     # print(JSONRenderer().render(IntlibSerializer(Intlib.objects.all(), many=True).data))
