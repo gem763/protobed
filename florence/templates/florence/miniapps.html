@@ -33,25 +33,49 @@
       delimiters: ['[[', ']]'],
       data: {
         imported: {},
-        code: `// const stock = new alpha.Alphastock();
-// stock.opt = {
-//     symbol: 'gld',
-//     apikey: '2JOML1ZPSME2Q28A',
-//     fields: ['close']
-// };
-// // stock.log();
+        code: `class TEST0 {
+    constructor() {
+        console.log(this);
+        function _fn0() { return 'fn0' }
 
-// const linechart = new line.Linechart(stock);
-// linechart.opt = {
-//     margin: {top: 50, right: 50, bottom: 50, left: 70},
-//     linecolor: 'orange',
-//     linewidth: '3px',
-//     x_field: 'date',
-//     y_field: 'close',
-// };
-// linechart.show('#chart');
+        Object.defineProperty(this, 'fn0', {
+            value: _fn0,
+            writable: false,
+            configurable: false
+        });
 
-// new gen.BaseMiniapp(alpha.Alphastock, line.LineChart).run('#chart')`
+        Object.freeze(this);
+
+        // this.validate();
+    }
+
+    validate() {
+        const utils = ['fn0'];
+        const ownProps = Object.getOwnPropertyNames(this);//console.log(this, ownProps)
+        if (utils.length!=ownProps.length || utils.length!=new Set(utils.concat(ownProps)).size)
+            throw new Error('error')
+    }
+
+    get() {
+        throw Error('you must override the function: get')
+    }
+}
+
+class TEST1 extends TEST0 {
+
+    fn0 = function() {}
+
+    // fn0() {
+    //     return 'fn1'
+    // }
+}
+
+let test = new TEST1();
+// console.log(test);
+// console.log(Object.getOwnPropertyNames(test));
+// console.log(Object.getOwnPropertyNames(test.__proto__));
+// console.log(test1.fn0())
+// console.log(test1)`
       },
 
       methods: {
