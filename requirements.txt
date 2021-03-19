@@ -15,7 +15,7 @@ django-allauth==0.40.0
 django-custom-user==0.7
 django-extensions==2.2.1
 django-model-utils==4.0.0
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 entrypoints==0.3
 feedfinder2==0.0.4
 feedparser==5.2.1
